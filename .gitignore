@@ -1,0 +1,32 @@
+# IDE / OS
+.specstory/
+.vscode/
+.DS_Store
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# dbt
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+dbt_project/warehouse.duckdb
+dbt_project/warehouse.duckdb.wal
+*.duckdb
+
+# Airflow / Docker
+logs/
+*.pid
+*.log
+
+# Ignore temp files in the AI folder
+.ai/*.log
+.ai/temp.json
+
+# DO NOT ignore the prompts or the ledger
+!.ai/LEAD_PROMPT.md
+!.ai/sprint_ledger.json

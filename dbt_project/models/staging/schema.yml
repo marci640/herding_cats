@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_example
+    description: "Template staging model contract. Replace with sprint-specific staging models."
+    columns:
+      - name: id
+        description: "Primary key"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null

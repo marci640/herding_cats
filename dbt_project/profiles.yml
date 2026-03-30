@@ -1,0 +1,10 @@
+herding_cats:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "warehouse.duckdb"
+      schema: main
+      threads: 4
+      settings:
+        custom_extension_repository: "https://community-extensions.duckdb.org"
