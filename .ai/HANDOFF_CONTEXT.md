@@ -46,10 +46,20 @@ This repository is a reusable **Copilot-first ETL platform template** built from
 3. `.ai/HANDOFF_CONTEXT.md`
 4. `.ai/sprint_ledger.json`
 5. `.ai/SPRINT_REQUIREMENTS.md`
-6. `agents/01_architect.md`
-7. `agents/02_transformer.md`
-8. `agents/03_auditor.md`
-9. `agents/04_devops.md`
+6. `agents/` (all agent files)
+
+## New Session Bootstrap
+Copy/paste this into a fresh Copilot session:
+
+```
+Read CLAUDE.md, .ai/LEAD_PROMPT.md, .ai/HANDOFF_CONTEXT.md, .ai/sprint_ledger.json, .ai/SPRINT_REQUIREMENTS.md, and all files in agents/. Then:
+1. Summarize the current project state.
+2. Identify whether a sprint is active.
+3. List any blockers or missing inputs.
+4. Recommend the exact next command or next sprint action.
+
+If a sprint is active, continue from the ledger state. If no sprint is active, stay in template mode and wait for sprint requirements.
+```
 
 ## Current Template State
 - `active_sprint` should remain `null` until a new sprint is started.

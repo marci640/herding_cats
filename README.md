@@ -1,14 +1,14 @@
-# 🚀 Agentic Data Workforce: GitHub Copilot Edition
+# 😺 Herding Cats - Agile Agentic Data Pipeline Project
 
-## 📌 Project Vision
+## Project Vision
 
 This project demonstrates how a **Technical PM** orchestrates a complex data engineering lifecycle using **GitHub Copilot**. Instead of writing line-by-line code, the TPM manages a "Sprint" by providing specialized context to Copilot, ensuring it acts as a Data Architect, dbt Developer, or QA Engineer on demand.
 
 ---
 
-## 🏗 The Structure
+## The Structure
 
-The project is designed to be **"Copilot-Native."** We use hidden and specialized folders to feed Copilot the exact context it needs for each phase.
+The project is designed to be **"Copilot-Native."** It uses hidden and specialized folders to feed Copilot the exact context it needs for each phase.
 
 * **`.ai/LEAD_PROMPT.md`**: The master instructions for the Copilot chat session.
 * **`agents/`**: Role-specific instructions you "attach" to your Copilot Chat.
@@ -16,7 +16,7 @@ The project is designed to be **"Copilot-Native."** We use hidden and specialize
 
 ---
 
-## 🛠 Running Sprints (Detailed Workflow)
+## Running Sprints (Detailed Workflow)
 
 ### 1) Prepare the sprint contract
 
@@ -68,7 +68,7 @@ Outputs include:
 - `docs/archive/sprint_[N]/sprint_[N]_summary.md`
 - `active_sprint: null` in ledger
 
-## 🔧 Advanced: Individual Phase Execution
+## Advanced: Individual Phase Execution
 
 For debugging or running a single phase in isolation:
 
@@ -79,7 +79,7 @@ For debugging or running a single phase in isolation:
 | Run Auditor only | `audit via #file:agents/03_auditor.md` |
 | Run DevOps only | `execute #file:agents/04_devops.md` |
 
-## ⚡ Command Cheat Sheet (Concise)
+## Command Cheat Sheet
 
 | Action | Command |
 |---|---|
@@ -89,10 +89,17 @@ For debugging or running a single phase in isolation:
 | Wrap up sprint | `Use #file:.ai/LEAD_PROMPT.md to execute the Sprint Wrap-Up.` |
 | Reset current sprint | `Use #file:.ai/LEAD_PROMPT.md to execute Sprint Reset Protocol.` |
 
-## 🧳 New Session Handoff
+## New Session Handoff
 
-- Durable context for future sessions lives in `.ai/HANDOFF_CONTEXT.md`.
-- A copy/paste bootstrap prompt for fresh sessions lives in `.ai/NEW_SESSION_PROMPT.md`.
-- A short operator guide lives in `.ai/TPM_QUICKSTART.md`.
+All durable context — lessons, bootstrap prompt, and template state — lives in `.ai/HANDOFF_CONTEXT.md`.
+
+## Troubleshooting: Where to Look
+
+| What | File |
+|---|---|
+| Current sprint state | `.ai/sprint_ledger.json` |
+| Project standards | `CLAUDE.md` |
+| Workflow & orchestration rules | `.ai/LEAD_PROMPT.md` |
+| Agent behavior | `agents/` |
 
 > **TPM Tip:** If Copilot drifts on SQL behavior, say: *"Use CLAUDE.md as source of truth."*
