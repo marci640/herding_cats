@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw data ingested by dlt into the 'raw' schema.
+      Tables are created/managed by dlt resources in include/dlt_sources/.
+    schema: raw
+    tables:
+      - name: raw_api_data
+        description: Raw API response data loaded by dlt (write_disposition: replace).
