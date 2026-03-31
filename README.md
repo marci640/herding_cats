@@ -93,6 +93,44 @@ For debugging or running a single phase in isolation:
 
 All durable context — lessons, bootstrap prompt, and template state — lives in `.ai/HANDOFF_CONTEXT.md`.
 
+## Atlassian MCP Integration
+
+This project leverages the **Model Context Protocol (MCP)** to bridge GitHub Copilot with Jira and Confluence. This allows for seamless technical project management and automated documentation directly within the IDE.
+
+### Key Capabilities
+
+| Feature | For Data Engineers (Technical) | For TPMs (Orchestration) |
+|---|---|---|
+| **Jira (Read/Write)** | Fetch requirements for new resources or dbt models directly from tickets. | Create "Technical Debt" tickets when Copilot identifies code smells during refactors. |
+| **Confluence (Read)** | Reference ADRs to ensure data pipelines follow established team standards. | Audit repositories against Project Specs on Confluence to identify missing features. |
+| **Confluence (Write)** | Automatically generate "Deployment Guides" based on the `README.md` and code changes. | Update "Sprint Progress" pages with summaries of daily code commits. |
+
+### Setup Instructions
+
+1. **Generate API Token:** Create a Personal Access Token at [id.atlassian.com](https://id.atlassian.com/manage-profile/security/api-tokens).
+2. **Configure MCP Server:** Add the Atlassian server to `.vscode/mcp.json`:
+   ```json
+   "atlassian": {
+     "command": "/opt/homebrew/bin/npx",
+     "type": "stdio",
+     "args": ["atlassian-mcp@latest"],
+     "env": {
+       "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin",
+       "ATLASSIAN_BASE_URL": "https://your-site.atlassian.net",
+       "ATLASSIAN_API_TOKEN": "YOUR_TOKEN",
+       "ATLASSIAN_USERNAME": "your-email@example.com"
+     }
+   }
+   ```
+3. **Verify Connection:** Restart VS Code, then check the OUTPUT panel (dropdown: "MCP: atlassian") for "Discovered N tools."
+
+### Example Prompts
+
+- *"Read Jira ticket SCRUM-1 and generate sprint requirements for `.ai/SPRINT_REQUIREMENTS.md`."*
+- *"Search Confluence for today's meeting notes and validate them against the current sprint requirements."*
+- *"Update Jira task SCRUM-1 with current sprint progress, blockers, and status."*
+- *"Publish the sprint wrap-up outputs (requirements and summary) to the `sprint_docs` folder in Confluence."*
+
 ## Troubleshooting: Where to Look
 
 | What | File |
