@@ -1,5 +1,6 @@
 ## Sprint Requirements
-<!-- Sprint version: [VERSION] | Started: [DATE] -->
+<!-- Sprint ID: [SCRUM-N] | Started: [DATE] -->
+**Sprint ID:** [SCRUM-N]
 
 ### Business Rules
 [Define the business logic and constraints for this sprint]

@@ -19,6 +19,8 @@ The project is designed to be **"Copilot-Native."** It uses hidden and specializ
 ## Running Sprints (Detailed Workflow)
 
 ### 1) Prepare the sprint contract
+b
+> **Convention: 1 Sprint = 1 Epic.** In agentic workflows, AI agents compress development velocity enough that a full Epic (e.g., a complete feature or pipeline) can ship in a single sprint timebox. This project enforces a 1:1 mapping: the **Jira Epic ID** (`SCRUM-N`) is the **branch name**, the **sprint ID**, and the **ledger key**. Sub-tasks live under the epic in Jira but the sprint identity is always the epic.
 
 Before chat execution, fill `.ai/SPRINT_REQUIREMENTS.md` completely:
 - business rules
@@ -83,6 +85,7 @@ For debugging or running a single phase in isolation:
 
 | Action | Command |
 |---|---|
+| Draft requirements from Jira + Confluence | *"Read the current branch name, fetch the matching Jira epic, and read the `sprint requirements` page from `sprints/SCRUM-N/` in Confluence. Draft `.ai/SPRINT_REQUIREMENTS.md` from both."* |
 | Initialize sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Initialize sprint from .ai/SPRINT_REQUIREMENTS.md.` |
 | Run full sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Run full sprint.` |
 | Continue after HITL/blocker | `continue sprint` |
@@ -124,12 +127,14 @@ This project leverages the **Model Context Protocol (MCP)** to bridge GitHub Cop
    ```
 3. **Verify Connection:** Restart VS Code, then check the OUTPUT panel (dropdown: "MCP: atlassian") for "Discovered N tools."
 
-### Example Prompts
+### Ad-Hoc Prompts
 
-- *"Read Jira ticket SCRUM-1 and generate sprint requirements for `.ai/SPRINT_REQUIREMENTS.md`."*
-- *"Search Confluence for today's meeting notes and validate them against the current sprint requirements."*
-- *"Update Jira task SCRUM-1 with current sprint progress, blockers, and status."*
-- *"Publish the sprint wrap-up outputs (requirements and summary) to the `sprint_docs` folder in Confluence."*
+These are contextual — use when the situation calls for it, not every sprint.
+
+| Use Case | Prompt |
+|---|---|
+| **HITL reconciliation** | *"Search Confluence for today's meeting notes and reconcile any decisions against `.ai/ACTIVE_ASSUMPTIONS.md`."* |
+| **Status sync to Jira** | *"Read `.ai/sprint_ledger.json` and update Jira task SCRUM-1 with current phase, blockers, and status."* |
 
 ## Troubleshooting: Where to Look
 

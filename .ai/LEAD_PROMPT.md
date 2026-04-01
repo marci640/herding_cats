@@ -45,9 +45,10 @@ When executing tasks or retrieving history, follow this strict **Precedence Orde
 
 ## 🔄 Sprint Synchronization Protocol (Sprint Start)
 When a sprint is initialized, you MUST:
-1. Read `/.ai/SPRINT_REQUIREMENTS.md` and extract `sprint_id`, goals, and dependencies.
-2. Update `/.ai/sprint_ledger.json`: move `active_sprint` to `history`, then write new sprint data.
-3. Check `environment_state.env_verified`. If `false`, trigger **Phase 0** before proceeding.
+1. **Derive `sprint_id`:** Run `git branch --show-current` to get the branch name (convention: `SCRUM-N`). This is the canonical sprint ID used in the ledger, archive folder, and Jira references. If the branch is `main` or doesn't match the `SCRUM-N` pattern, halt and ask the TPM to create/checkout the correct branch first.
+2. Read `/.ai/SPRINT_REQUIREMENTS.md` and verify `sprint_id` matches the branch name. Extract goals and dependencies.
+3. Update `/.ai/sprint_ledger.json`: move `active_sprint` to `history`, then write new sprint data with `sprint_id` from step 1.
+4. Check `environment_state.env_verified`. If `false`, trigger **Phase 0** before proceeding.
 
 ## ⛓️ Execution Sequencing & Gates
 1. **Phase 0 (DevOps):** Execute Mode 1 of `04_devops.md`. Update `env_verified: true`.
@@ -111,7 +112,38 @@ Execute these steps when Phase 4 is complete and the TPM requests a wrap-up:
 4. **Generate Summary:** Write `sprint_[N]_summary.md` (see Archive Template).
 5. **Rule Promotion:** Scan for "Global" rules and append to `CLAUDE.md`.
 6. **Update Ledger:** Move `active_sprint` to `history`, increment version, set `active_sprint: null`.
-7. **Workspace Reset:** Replace `/.ai/SPRINT_REQUIREMENTS.md` with the contents of `/.ai/SPRINT_REQUIREMENTS_TEMPLATE.md`. Delete temporary logs (`debug.log`, `FIX_LOG.md`, `.ai/ACTIVE_ASSUMPTIONS.md`).
+7. **Workspace Reset:** Replace `/.ai/SPRINT_REQUIREMENTS.md` with the following blank template. Delete temporary logs (`debug.log`, `FIX_LOG.md`, `.ai/ACTIVE_ASSUMPTIONS.md`).
+
+```markdown
+## Sprint Requirements
+<!-- Sprint ID: [SCRUM-N] | Started: [DATE] -->
+**Sprint ID:** [SCRUM-N]
+
+### Business Rules
+[Define the business logic and constraints for this sprint]
+
+### Transformation Logic
+[Specify the data transformation requirements]
+
+### New Models / Sources
+[List new models, sources, or changes to existing models]
+
+### Execution Prerequisites
+[List sprint-specific upstream inputs and preflight checks not already covered by permanent project standards in CLAUDE.md.]
+
+### Technical Dependencies
+[List any technical requirements, packages, or infrastructure needed]
+
+### Approved Assumptions
+[None, or list only assumptions that were explicitly approved through HITL; this section is the replayable record archived with the sprint requirements]
+
+### Acceptance Criteria
+[List concrete success criteria, including required model builds, test expectations, and any upstream readiness conditions that must be satisfied before the sprint can be considered complete.]
+
+### Permanent Rules (will be promoted to CLAUDE.md on sprint close)
+[List any rules that should become global project standards]
+```
+8. **Publish to Confluence (conditional):** If the Atlassian MCP server is available, publish the archived `sprint_[N]_requirements.md` and `sprint_[N]_summary.md` to the `sprints/SCRUM-N/` Confluence folder (alongside the user-authored sprint requirements page). If MCP is unavailable, skip and note in the wrap-up report.
 
 ### Archive Template
 When archiving, write `docs/archive/sprint_[N]/sprint_[N]_summary.md` with this structure:

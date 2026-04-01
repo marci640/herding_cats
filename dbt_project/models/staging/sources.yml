@@ -8,4 +8,4 @@ sources:
     schema: raw
     tables:
       - name: raw_api_data
-        description: Raw API response data loaded by dlt (write_disposition: replace).
+        description: Raw API response data loaded by dlt.
