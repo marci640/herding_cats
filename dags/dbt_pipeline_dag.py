@@ -8,6 +8,7 @@ import logging
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pendulum import datetime
 
 from airflow.decorators import dag, task
@@ -27,6 +28,8 @@ log = logging.getLogger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 AIRFLOW_HOME = Path(__file__).resolve().parent.parent
+load_dotenv(AIRFLOW_HOME / ".env")  # Load S3/MSSQL creds for dbt + dlt tasks
+
 DBT_PROJECT_PATH = AIRFLOW_HOME / "dbt_project"
 DB_PATH = AIRFLOW_HOME / "dbt_project" / "warehouse.duckdb"
 DBT_BIN = str(AIRFLOW_HOME / "venv" / "bin" / "dbt")
