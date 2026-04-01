@@ -4,6 +4,12 @@ config-version: 2
 
 profile: herding_cats
 
+on-run-start:
+  - "INSTALL mssql FROM community;"
+  - "LOAD mssql;"
+  - "ATTACH 'mssql://{{ env_var('MSSQL_USER') }}:{{ env_var('MSSQL_PASSWORD') }}@127.0.0.1:1433?database={{ env_var('MSSQL_DATABASE') }}' AS sql_server (TYPE MSSQL);"
+
+
 model-paths: ["models"]
 seed-paths: ["seeds"]
 test-paths: ["tests"]
