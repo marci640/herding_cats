@@ -9,3 +9,9 @@ sources:
     tables:
       - name: raw_api_data
         description: Raw API response data loaded by dlt.
+      - name: cats
+        description: "Cats table extracted from MSSQL via dlt. Schema pending first extraction (see A2)."
+      - name: reviews
+        description: "Reviews table extracted from MSSQL via dlt. Schema pending first extraction (see A2)."
+      - name: seafood_restaurants
+        description: "Seafood restaurants table extracted from MSSQL via dlt. Schema pending first extraction (see A2)."

@@ -21,7 +21,7 @@
     "name": "Sprint 01 — Staging Data",
     "branch": "SCRUM-3",
     "started": "2026-03-31",
-    "status": "INITIALIZING",
+    "status": "HITL_PENDING",
     "goals": [
       "Create 5 staging models from 3 source types (MSSQL, seed CSV, S3)"
     ],
@@ -36,7 +36,8 @@
       "seeds/restaurant_reviews.csv"
     ],
     "phase_log": [
-      {"phase": "init", "timestamp": "2026-03-31", "result": "sprint initialized"}
+      {"phase": "init", "timestamp": "2026-03-31", "result": "sprint initialized"},
+      {"phase": "architect", "timestamp": "2026-03-31", "result": "schema.yml + sources.yml + ACTIVE_ASSUMPTIONS.md generated. 5 assumptions logged. BLOCKER: DuckDB MSSQL extension does not exist (A1)."}
     ]
   },
   "history": []
