@@ -2,15 +2,34 @@ version: 2
 
 models:
   # -----------------------------------------------------------------
-  # MSSQL source tables (via dlt → raw schema — see A1, A2)
-  # Column definitions are partial until first dlt extraction reveals
-  # full schemas. SELECT * pattern used; PK placeholder pending.
+  # MSSQL source tables (via on-run-start ATTACH as sql_server)
+  # Schema: sql_server.dbo.{table}
   # -----------------------------------------------------------------
   - name: stg_cats
-    description: "Staging model for cats table from MSSQL source. Loaded via dlt into raw schema."
+    description: "Staging model for cats table from MSSQL source (sql_server.dbo.cats). Contains cat profiles with judgmental ratings."
     config:
       materialized: table
     columns:
+      - name: cat_id
+        description: "Primary key — unique identifier for each cat"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Name of the cat"
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: age_years
+        description: "Age of the cat in years"
+        data_type: "DECIMAL(4,1)"
+      - name: favorite_toy
+        description: "The cat's favorite toy"
+        data_type: VARCHAR
+      - name: judgmental_level
+        description: "How judgmental the cat is (integer scale)"
+        data_type: INTEGER
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP
@@ -18,10 +37,35 @@ models:
           - not_null
 
   - name: stg_reviews
-    description: "Staging model for reviews table from MSSQL source. Loaded via dlt into raw schema."
+    description: "Staging model for reviews table from MSSQL source (sql_server.dbo.reviews). Cat reviews of seafood restaurants."
     config:
       materialized: table
     columns:
+      - name: review_id
+        description: "Primary key — unique identifier for each review"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: cat_id
+        description: "Foreign key to cats table"
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: restaurant_id
+        description: "Foreign key to seafood_restaurants table"
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: paws_rating
+        description: "Paw-based rating text (e.g. 'Two Paws Way Up')"
+        data_type: VARCHAR
+      - name: hiss_count
+        description: "Number of hisses during the dining experience"
+        data_type: INTEGER
+      - name: review_text
+        description: "Text content of the cat's review"
+        data_type: VARCHAR
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP
@@ -29,10 +73,30 @@ models:
           - not_null
 
   - name: stg_seafood_restaurants
-    description: "Staging model for seafood_restaurants table from MSSQL source. Loaded via dlt into raw schema."
+    description: "Staging model for seafood_restaurants table from MSSQL source (sql_server.dbo.seafood_restaurants). Restaurant profiles."
     config:
       materialized: table
     columns:
+      - name: restaurant_id
+        description: "Primary key — unique identifier for each restaurant"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Name of the restaurant"
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: neighborhood
+        description: "Neighborhood where the restaurant is located"
+        data_type: VARCHAR
+      - name: specialty_dish
+        description: "The restaurant's signature dish"
+        data_type: VARCHAR
+      - name: outdoor_seating_for_napping
+        description: "Whether the restaurant has outdoor seating suitable for cat napping"
+        data_type: BOOLEAN
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP

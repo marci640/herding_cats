@@ -70,6 +70,19 @@ When a sprint is initialized, you MUST:
    - If no values changed (all `approve`): skip Archie patch and proceed directly to Phase 2.
    - If any assumption is `reject`: halt and notify the TPM that a replacement decision is required before continuing.
    - If approved with edits resolved: Set ledger status to `APPROVED` and proceed to Phase 2.
+
+### 🔧 Blocker Resolution Protocol (Mid-HITL Re-run)
+When a TPM resolves a blocker by modifying code/config (e.g., upgrading a dependency, adding `on-run-start` hooks), the assumption set is stale. The correct re-entry flow:
+
+1. **TPM commits the fix** (or directs the agent to apply it).
+2. **TPM prompts:** *"Blocker [ID] resolved. Re-run Phase 1 from discovery."*
+3. **Re-run Architect (Phase 1):** Full re-discovery of sources affected by the blocker. Regenerate `schema.yml` and `ACTIVE_ASSUMPTIONS.md` based on current project state. Previously resolved/approved assumptions carry forward; only blocked/stale assumptions are regenerated.
+4. **Update PR body:** Run `gh pr edit <N> --body-file <updated_body>.md` to reflect the refreshed assumption table.
+5. **Commit + push** updated artifacts (schema.yml, ACTIVE_ASSUMPTIONS.md, any config changes).
+6. **Resume HITL gate:** Only unresolved assumptions require TPM approval. If all are resolved, proceed directly to Phase 2.
+
+**Key principle:** Blocker resolution invalidates downstream discovery. Don't patch assumptions in place — re-run the Architect with fresh data.
+
 4. **Phase 2 (Transformer):** Once `APPROVED`, Bea writes SQL. She is FORBIDDEN from reading requirements; she only sees the technical contract.
 5. **Phase 3 (Auditor):** Audrey (Opus) performs cross-reference audit (Requirements vs. Assumptions vs. SQL).
 6. **Phase 4 (DevOps):** Execute Mode 2 of `04_devops.md` to validate the Airflow DAG.
