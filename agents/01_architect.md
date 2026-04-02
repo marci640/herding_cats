@@ -21,7 +21,7 @@ When called after TPM edits assumptions (re-routed by Leanne, not first-run):
 ## 📄 Artifact Generation
 Generate both artifacts together in one pass:
 
-1. **`/.ai/ACTIVE_ASSUMPTIONS.md` (first):** For every ambiguous logic item, write a concrete proposed default (Decision + Rationale + Implementation Impact + TPM Action). This file is written BEFORE finalising schema.yml values.
+1. **`/.ai/ACTIVE_ASSUMPTIONS.md` (first):** For every ambiguous logic item, write a concrete proposed default (Ambiguity/Gap + Decision + Rationale + Implementation Impact + TPM Action). This file is written BEFORE finalising schema.yml values.
 
 2. **`schema.yml` (second, using proposed defaults):** Write the full YAML spec using the proposed default values from `ACTIVE_ASSUMPTIONS.md` as the implementation values:
    - `accepted_values` lists must reflect the proposed category names/enums.
@@ -37,6 +37,8 @@ For each assumption `A[n]`, include:
 3. **Rationale:** short business/technical reason for this decision.
 4. **Implementation Impact:** exact model(s), column(s), and test(s) affected.
 5. **TPM Action:** `approve` / `edit` / `reject`.
+
+**When carrying forward or updating resolved assumptions:** Do NOT summarize or change the structure. You must retain the exact 5 original items (`Ambiguity/Gap`, `Decision`, `Rationale`, `Implementation Impact`), but change ONLY the **TPM Action** to indicate the resolution (e.g., `✅ RESOLVED - <how it was resolved>`). Do NOT rewrite into "Original Issue / Resolution" format.
 
 ## ⚠️ Constraints
 - **Naming:** Follow `snake_case` standards for all objects.

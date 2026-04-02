@@ -41,7 +41,7 @@ Pattern: `git add -A && git commit -m "message" && git push`
 1. **Phase 0 (DevOps):** Execute Mode 1 of `04_devops.md`. Set `env_verified: true`.
 2. **Phase 1 (Architect):** Archie reads requirements → generates `schema.yml`. MUST generate `ACTIVE_ASSUMPTIONS.md` if logic is ambiguous.
 3. **Phase 1.5 (Assumption Gate):**
-   - **Format check:** Every assumption needs `Decision`, `Rationale`, `Implementation Impact`, `TPM Action`.
+   - **Format check:** Every assumption needs `Ambiguity/Gap`, `Decision`, `Rationale`, `Implementation Impact`, `TPM Action`.
    - **Publish to Confluence:** Delegate to Devin (Mode 3, target: `sprints/SCRUM-N/assumptions`, content: `ACTIVE_ASSUMPTIONS.md`). This is the canonical review surface — non-technical stakeholders edit here.
    - **PR:** Check `gh pr view --json url`. If missing, create with `gh pr create --fill --assignee "@me" --reviewer "marci640"`. PR body should link to the Confluence assumptions page.
    - Set ledger → `HITL_PENDING`. Halt and notify TPM.

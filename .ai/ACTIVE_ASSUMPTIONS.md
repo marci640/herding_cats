@@ -1,36 +1,36 @@
 # Active Assumptions — SCRUM-3
 
 ## A1: MSSQL Extension Availability — RESOLVED
-- **Original Issue:** DuckDB MSSQL community extension returned HTTP 404 on DuckDB 1.4.2.
-- **Resolution:** Upgraded DuckDB from 1.4.2 → 1.4.4. Extension installs and loads successfully. `on-run-start` hooks in `dbt_project.yml` work as intended.
-- **Status:** ✅ RESOLVED — no TPM action needed.
+1. **Ambiguity/Gap:** Requirements specify DuckDB MSSQL community extension but it returned HTTP 404 on DuckDB 1.4.2.
+2. **Decision:** Upgrade DuckDB from 1.4.2 → 1.4.4 to install the extension successfully and use `on-run-start` hooks.
+3. **Rationale:** Upgrading to 1.4.4 is the supported path to ensure the extension installs and loads properly for MSSQL connections.
+4. **Implementation Impact:** DuckDB version bumped; `dbt_project.yml` hooks enabled.
+5. **TPM Action:** ✅ RESOLVED — no TPM action needed.
 
 ## A2: MSSQL Table Schemas — RESOLVED
-- **Original Issue:** Could not connect to MSSQL to discover table schemas (blocked by A1).
-- **Resolution:** Connected to MSSQL via DuckDB extension. Discovered all 3 tables in `sql_server.dbo` schema:
-  - **cats** (3 rows): `cat_id` INTEGER (PK), `name` VARCHAR, `age_years` DECIMAL(4,1), `favorite_toy` VARCHAR, `judgmental_level` INTEGER
-  - **reviews** (3 rows): `review_id` INTEGER (PK), `cat_id` INTEGER (FK), `restaurant_id` INTEGER (FK), `paws_rating` VARCHAR, `hiss_count` INTEGER, `review_text` VARCHAR
-  - **seafood_restaurants** (3 rows): `restaurant_id` INTEGER (PK), `name` VARCHAR, `neighborhood` VARCHAR, `specialty_dish` VARCHAR, `outdoor_seating_for_napping` BOOLEAN
-- **Status:** ✅ RESOLVED — schema.yml updated with actual columns.
+1. **Ambiguity/Gap:** Could not connect to MSSQL initially (blocked by A1), so exact table schemas were unknown.
+2. **Decision:** Discovered tables `cats`, `reviews`, `seafood_restaurants` via DuckDB extension and mapped exact schemas (e.g., `cat_id` INTEGER PK, etc).
+3. **Rationale:** Accurate table definitions are required for staging SQL.
+4. **Implementation Impact:** `schema.yml` updated with actual columns.
+5. **TPM Action:** ✅ RESOLVED — schema.yml updated with actual columns.
 
 ## A3: Seed CSV Column Names — RESOLVED
-- **Original Issue:** Exact seed CSV column names were not specified in initial requirements.
-- **Resolution:** Confluence requirements page (v2) now includes the explicit seed data:
-  ```csv
-  restaurant_id,review
-  101,5
-  102,4
-  103,5
-  ```
-  2 columns: `restaurant_id` (INTEGER, PK), `review` (INTEGER). No synthetic PK needed — `restaurant_id` serves as the natural PK.
-- **Status:** ✅ RESOLVED — schema.yml updated to match Confluence-specified columns.
+1. **Ambiguity/Gap:** Exact seed CSV column names were not specified in initial requirements.
+2. **Decision:** Use explicit columns from updated requirements: `restaurant_id` (INTEGER, PK), `review` (INTEGER). No synthetic PK.
+3. **Rationale:** Aligns with Confluence requirements (v2) specifying natural PK.
+4. **Implementation Impact:** `schema.yml` and staging models updated to match explicit columns.
+5. **TPM Action:** ✅ RESOLVED — schema.yml updated to match Confluence-specified columns.
 
 ## A4: dbt_project.yml Modification — RESOLVED
-- **Original Issue:** CLAUDE.md rule says "Never modify dbt_project.yml during a sprint run." Requirements specify `on-run-start` hooks.
-- **Resolution:** TPM directly modified `dbt_project.yml` to add `on-run-start` hooks (MSSQL install/load/attach). This is a TPM override of the immutability rule for this sprint since the hooks are part of the sprint requirements.
-- **Status:** ✅ RESOLVED — TPM-directed change, no further action needed.
+1. **Ambiguity/Gap:** CLAUDE.md prohibits modifying `dbt_project.yml` during a sprint run, but MSSQL `on-run-start` hooks are required for sprint setup.
+2. **Decision:** Override immutability rule to add `on-run-start` hooks for MSSQL install/load/attach.
+3. **Rationale:** TPM directly authorized this override as the hooks are part of the core sprint requirements.
+4. **Implementation Impact:** `dbt_project.yml` modified by TPM.
+5. **TPM Action:** ✅ RESOLVED — TPM-directed change, no further action needed.
 
 ## A5: S3 dogs.csv Primary Key — RESOLVED
-- **Original Issue:** Requirements don't explicitly name the primary key for dogs.csv.
-- **Resolution:** Confirmed by inspecting S3 file. `dog_id` (BIGINT) is the natural PK (sequential 1–3). Schema: `dog_id`, `name`, `age_years`, `favorite_toy`, `judgmental_level`. 3 rows.
-- **Status:** ✅ RESOLVED — schema.yml updated.
+1. **Ambiguity/Gap:** Requirements don't explicitly name the primary key for `dogs.csv`.
+2. **Decision:** Use `dog_id` (BIGINT) as the natural PK.
+3. **Rationale:** Confirmed by inspecting S3 file which contains sequence 1-3.
+4. **Implementation Impact:** `schema.yml` updated.
+5. **TPM Action:** ✅ RESOLVED — schema.yml updated.

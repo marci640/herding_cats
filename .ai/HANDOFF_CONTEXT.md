@@ -68,17 +68,6 @@ Read CLAUDE.md, .ai/LEAD_PROMPT.md, .ai/HANDOFF_CONTEXT.md, .ai/sprint_ledger.js
 If a sprint is active, continue from the ledger state. If no sprint is active, stay in template mode and wait for sprint requirements.
 ```
 
-## Active Sprint State (SCRUM-3)
-- **Branch:** `SCRUM-3` (clean, pushed to origin)
-- **Ledger status:** `HITL_PENDING`
-- **Phase completed:** Phase 0 (env) + Phase 1 (architect, run twice — before and after DuckDB upgrade)
-- **Paused at:** Phase 1.5 — assumption A3 (seed CSV column names) awaiting TPM approval
-- **Resolved assumptions:** A1 (MSSQL extension — DuckDB upgraded 1.4.2→1.4.4), A2 (MSSQL schemas discovered), A4 (dbt_project.yml hooks), A5 (dog_id PK confirmed)
-- **PR:** #1 open, links to Confluence assumptions page
-- **Schema.yml:** 5 staging models with full column definitions from real MSSQL discovery
-- **Sources.yml:** `sql_server.dbo` (3 MSSQL tables) + `raw` (dlt target)
-- **Next action after A3 approval:** Phase 2 (Transformer writes 5 SQL files + seed CSV)
-
 ## Environment
 - Python 3.11, dbt-core 1.11.7, dbt-duckdb 1.10.1, DuckDB 1.4.4
 - MSSQL community extension works on DuckDB 1.4.4 (cached at `~/.duckdb/extensions/v1.4.4/osx_arm64/`)
@@ -92,3 +81,5 @@ If a sprint is active, continue from the ledger state. If no sprint is active, s
 - **Removed:** `requirements` page (unnecessary — assumptions already surface misinterpretation)
 - **Removed:** `add-info-bar` and `update` Confluence actions (dead code)
 - **Simplified prompts:** Blocker + requirements-revised prompts no longer require IDs (agent derives from context)
+- **Assumptions Format Consistency:** Enforced the full 5-item format (including `Ambiguity/Gap`) across `01_architect.md` and `LEAD_PROMPT.md` to prevent generation gaps.
+- **Resolved Assumptions Formatting:** Added a strict rule to `01_architect.md` to ensure carried-forward/resolved assumptions retain their exact original 5-item structure (only updating the `TPM Action` field), rather than summarizing into an "Original Issue / Resolution" format.
