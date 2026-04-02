@@ -13,14 +13,17 @@
   - **seafood_restaurants** (3 rows): `restaurant_id` INTEGER (PK), `name` VARCHAR, `neighborhood` VARCHAR, `specialty_dish` VARCHAR, `outdoor_seating_for_napping` BOOLEAN
 - **Status:** ✅ RESOLVED — schema.yml updated with actual columns.
 
-## A3: Seed CSV Column Names
-- **Ambiguity/Gap:** Requirements specify "restaurant name, review text, star rating" with 3 columns and 3 rows. Exact `snake_case` column names are not specified.
-- **Decision (Proposed Default):** Use column names: `restaurant_name` (VARCHAR), `review_text` (VARCHAR), `star_rating` (INTEGER). Add a synthetic primary key `review_id` (INTEGER) since none is specified and every model requires a unique+not_null PK test per CLAUDE.md.
-- **Rationale:** snake_case versions of the described columns. A synthetic PK is required by the testing standard.
-- **Implementation Impact:**
-  - `seeds/restaurant_reviews.csv`: 4 columns (review_id, restaurant_name, review_text, star_rating), 3 rows
-  - `models/staging/schema.yml`: `stg_restaurant_reviews` with 5 columns (4 source + processed_at), PK tests on review_id
-- **TPM Action:** `approve` / `edit` / `reject`
+## A3: Seed CSV Column Names — RESOLVED
+- **Original Issue:** Exact seed CSV column names were not specified in initial requirements.
+- **Resolution:** Confluence requirements page (v2) now includes the explicit seed data:
+  ```csv
+  restaurant_id,review
+  101,5
+  102,4
+  103,5
+  ```
+  2 columns: `restaurant_id` (INTEGER, PK), `review` (INTEGER). No synthetic PK needed — `restaurant_id` serves as the natural PK.
+- **Status:** ✅ RESOLVED — schema.yml updated to match Confluence-specified columns.
 
 ## A4: dbt_project.yml Modification — RESOLVED
 - **Original Issue:** CLAUDE.md rule says "Never modify dbt_project.yml during a sprint run." Requirements specify `on-run-start` hooks.

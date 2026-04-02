@@ -1,5 +1,6 @@
 ## Sprint Requirements
 <!-- Sprint ID: SCRUM-3 | Started: 2026-03-31 -->
+<!-- Confluence Source: requirements v2 — https://fhir-healthcare.atlassian.net/wiki/spaces/~712020d364f26c180a47338114425b64719078/pages/1015810/requirements -->
 **Sprint ID:** SCRUM-3
 
 ### Business Rules
@@ -24,7 +25,13 @@
   - `sql_server.dbo.seafood_restaurants` → `stg_seafood_restaurants`
 
 **2. Seed data (1 CSV):**
-- Create `seeds/restaurant_reviews.csv` with 3 columns (restaurant name, review text, star rating) and 3 rows.
+- Create `seeds/restaurant_reviews.csv` with 2 columns and 3 rows:
+  ```csv
+  restaurant_id,review
+  101,5
+  102,4
+  103,5
+  ```
 - Staging model `stg_restaurant_reviews` references the seed via `{{ ref('restaurant_reviews') }}`.
 
 **3. AWS S3 (1 CSV):**

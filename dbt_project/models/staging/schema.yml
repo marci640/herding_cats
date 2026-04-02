@@ -104,29 +104,21 @@ models:
           - not_null
 
   # -----------------------------------------------------------------
-  # Seed source (local CSV — see A3)
+  # Seed source (local CSV — columns confirmed from Confluence)
   # -----------------------------------------------------------------
   - name: stg_restaurant_reviews
-    description: "Staging model for restaurant_reviews seed CSV. Contains restaurant name, review text, and star rating."
+    description: "Staging model for restaurant_reviews seed CSV. Contains restaurant ID and review score."
     config:
       materialized: table
     columns:
-      - name: review_id
-        description: "Primary key — synthetic sequential ID for each review"
+      - name: restaurant_id
+        description: "Primary key — unique restaurant identifier from seed CSV"
         data_type: INTEGER
         tests:
           - unique
           - not_null
-      - name: restaurant_name
-        description: "Name of the restaurant"
-        data_type: VARCHAR
-        tests:
-          - not_null
-      - name: review_text
-        description: "Text content of the review"
-        data_type: VARCHAR
-      - name: star_rating
-        description: "Star rating for the restaurant (integer)"
+      - name: review
+        description: "Review score (integer rating)"
         data_type: INTEGER
         tests:
           - not_null

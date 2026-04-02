@@ -10,7 +10,7 @@
     "installed_drivers": [
       "dbt-core==1.11.7",
       "dbt-duckdb==1.10.1",
-      "duckdb==1.4.2"
+      "duckdb==1.4.4"
     ],
     "database": "duckdb",
     "env_verified": true,
@@ -37,7 +37,8 @@
     ],
     "phase_log": [
       {"phase": "init", "timestamp": "2026-03-31", "result": "sprint initialized"},
-      {"phase": "architect", "timestamp": "2026-03-31", "result": "schema.yml + sources.yml + ACTIVE_ASSUMPTIONS.md generated. 5 assumptions logged. BLOCKER: DuckDB MSSQL extension does not exist (A1)."}
+      {"phase": "architect", "timestamp": "2026-03-31", "result": "schema.yml + sources.yml + ACTIVE_ASSUMPTIONS.md generated. 5 assumptions logged. BLOCKER: DuckDB MSSQL extension does not exist (A1)."},
+      {"phase": "architect-rerun", "timestamp": "2026-04-01", "result": "Requirements updated on Confluence (v2). Seed data now 2 columns (restaurant_id, review). A3 resolved. All 5 assumptions resolved. schema.yml updated."}
     ]
   },
   "history": []

@@ -23,8 +23,15 @@ This repository is a reusable **Copilot-first ETL platform template** built from
   3. `Rationale`
   4. `Implementation Impact`
   5. `TPM Action`
-- PR body should point reviewers to `.ai/ACTIVE_ASSUMPTIONS.md` as the source of truth rather than duplicating assumptions.
+- PR links to Confluence `assumptions` page as the canonical review surface (not PR body).
 - Use the project virtual environment only: `venv/bin/python`, `venv/bin/pip`, `venv/bin/dbt`.
+
+## Confluence Integration
+- **Page structure per sprint:** `sprints/SCRUM-N/` with two pages:
+  - `requirements` — authored and edited by TPM/stakeholders only
+  - `assumptions` — initial draft by agent, edited by both agent and stakeholders
+- **Version tracking:** When Confluence content is read into the process, the consuming file (`SPRINT_REQUIREMENTS.md` or `ACTIVE_ASSUMPTIONS.md`) includes a `Confluence Source: <page_title> v<N> — <URL>` header line.
+- **Publishing:** All Confluence writes go through Devin (04_devops.md Mode 3). If MCP is unavailable, the sprint continues — publishing is non-blocking.
 
 ## What Was Intentionally Removed in This Template
 - Business/domain-specific SQL models
@@ -61,7 +68,27 @@ Read CLAUDE.md, .ai/LEAD_PROMPT.md, .ai/HANDOFF_CONTEXT.md, .ai/sprint_ledger.js
 If a sprint is active, continue from the ledger state. If no sprint is active, stay in template mode and wait for sprint requirements.
 ```
 
-## Current Template State
-- `active_sprint` should remain `null` until a new sprint is started.
-- `dbt_project/` is a skeleton only.
-- `dags/dbt_pipeline_dag.py` is a generic Airflow/dbt orchestration skeleton.
+## Active Sprint State (SCRUM-3)
+- **Branch:** `SCRUM-3` (clean, pushed to origin)
+- **Ledger status:** `HITL_PENDING`
+- **Phase completed:** Phase 0 (env) + Phase 1 (architect, run twice — before and after DuckDB upgrade)
+- **Paused at:** Phase 1.5 — assumption A3 (seed CSV column names) awaiting TPM approval
+- **Resolved assumptions:** A1 (MSSQL extension — DuckDB upgraded 1.4.2→1.4.4), A2 (MSSQL schemas discovered), A4 (dbt_project.yml hooks), A5 (dog_id PK confirmed)
+- **PR:** #1 open, links to Confluence assumptions page
+- **Schema.yml:** 5 staging models with full column definitions from real MSSQL discovery
+- **Sources.yml:** `sql_server.dbo` (3 MSSQL tables) + `raw` (dlt target)
+- **Next action after A3 approval:** Phase 2 (Transformer writes 5 SQL files + seed CSV)
+
+## Environment
+- Python 3.11, dbt-core 1.11.7, dbt-duckdb 1.10.1, DuckDB 1.4.4
+- MSSQL community extension works on DuckDB 1.4.4 (cached at `~/.duckdb/extensions/v1.4.4/osx_arm64/`)
+- MSSQL connection via on-run-start hooks in `dbt_project.yml`
+- Atlassian MCP configured in `.vscode/mcp.json` (14 tools)
+
+## Recent Process Changes (This Session)
+- **LEAD_PROMPT.md** consolidated from 217→167 lines across multiple passes
+- **Confluence version tracking:** Provenance lives in consuming files (header line), not in the ledger
+- **Devin Mode 3** simplified to single `publish` action (~15 lines, down from ~40)
+- **Removed:** `requirements` page (unnecessary — assumptions already surface misinterpretation)
+- **Removed:** `add-info-bar` and `update` Confluence actions (dead code)
+- **Simplified prompts:** Blocker + requirements-revised prompts no longer require IDs (agent derives from context)

@@ -74,7 +74,7 @@ When the HITL gate is interrupted by a blocker resolution or requirements change
 | **Requirements revised** on Confluence | *"Requirements updated. Re-run from Phase 1."* | Re-fetch Confluence page → re-draft `SPRINT_REQUIREMENTS.md` |
 
 **Re-entry steps (both triggers):**
-1. **If requirements trigger:** Re-fetch `requirements-user` page via MCP, overwrite `SPRINT_REQUIREMENTS.md` (update the `Confluence Source:` header with the new version link).
+1. **If requirements trigger:** Re-fetch `requirements` page via MCP, overwrite `SPRINT_REQUIREMENTS.md` (update the `Confluence Source:` header with the new version link).
 2. **Re-run Architect (Phase 1):** Full re-discovery. Regenerate `schema.yml` + `ACTIVE_ASSUMPTIONS.md`. Carry forward previously resolved assumptions.
 3. **Publish to Confluence:** Delegate to Devin (Mode 3, target: `sprints/SCRUM-N/assumptions`, content: regenerated `ACTIVE_ASSUMPTIONS.md`).
 4. **Update PR:** Post comment + re-request review (PR body just links to Confluence).
