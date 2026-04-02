@@ -47,3 +47,22 @@ When generating `dags/dbt_pipeline_dag.py`:
 - Use `venv/bin/dbt` or rely on the default dbt in PATH depending on environment
 
 **Do NOT copy a hardcoded template.** Always generate based on current project state.
+
+---
+
+## Mode 3 — Confluence Publishing
+Run this mode when the Lead Agent needs to publish content to Confluence.
+
+### Inputs (provided by Lead Agent)
+- **target:** Confluence page path (e.g. `sprints/SCRUM-N/assumptions`)
+- **content:** Markdown content to publish, OR path to a local file
+
+### Steps
+1. Check if the page exists via MCP (`get-page`).
+2. If exists → `update-page` with the provided content.
+3. If missing → `create-page` under the correct parent path.
+4. Report: `PUBLISH OK — [page path] (version N).`
+
+### Error Handling
+- If MCP server is unavailable → report `CONFLUENCE UNAVAILABLE — skipping publish` and return. Do not fail the sprint.
+- If parent path is missing → report the error and halt.
