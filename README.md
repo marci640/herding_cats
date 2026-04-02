@@ -20,7 +20,7 @@ The project is designed to be **"Copilot-Native."** It uses hidden and specializ
 
 ### 1) Prepare the sprint contract
 
-> **Convention: 1 Sprint = 1 Epic.** In agentic workflows, AI agents compress development velocity enough that a full Epic (e.g., a complete feature or pipeline) can ship in a single sprint timebox. This project enforces a 1:1 mapping: the **Jira Epic ID** (`SCRUM-N`) is the **branch name**, the **sprint ID**, and the **ledger key**. Sub-tasks live under the epic in Jira but the sprint identity is always the epic.
+> **Convention: 1 Sprint = 1 Epic.** In agentic workflows, AI agents compress development velocity enough that a full Epic (e.g., a complete feature or pipeline) can ship in a single sprint timebox. This project enforces a 1:1 mapping defined by the `ACTIVE_JIRA_EPIC` variable in your `.env` file. This ID (`SCRUM-N`) acts as the **sprint ID** and **ledger key**. Sub-tasks live under the epic in Jira but the sprint identity is always driven by the epic ID in `.env`.
 
 Before chat execution, fill `.ai/SPRINT_REQUIREMENTS.md` completely:
 - business rules
@@ -69,8 +69,8 @@ Use `continue` (or `continue sprint`) after you apply TPM label or fix blockers.
 Wrap-up archives sprint artifacts, promotes permanent rules, updates ledger history, and resets `.ai/SPRINT_REQUIREMENTS.md` for the next sprint.
 
 Outputs include:
-- `docs/archive/sprint_[N]/sprint_[N]_requirements.md`
-- `docs/archive/sprint_[N]/sprint_[N]_summary.md`
+- `docs/archive/{sprint_id_lowercase}/requirements.md`
+- `docs/archive/{sprint_id_lowercase}/summary.md`
 - `active_sprint: null` in ledger
 
 ## Advanced: Individual Phase Execution

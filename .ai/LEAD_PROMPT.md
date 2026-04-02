@@ -31,7 +31,7 @@ Pattern: `git add -A && git commit -m "message" && git push`
 **Hard gate:** Before PR actions or phase transitions, run `git status -sb`. If branch is `ahead`, push first.
 
 ## 🔄 Sprint Synchronization (Sprint Start)
-1. **Derive `sprint_id`:** `git branch --show-current` → must match `SCRUM-N` pattern. If `main` or non-matching, halt and ask TPM.
+1. **Derive `sprint_id`:** Read `ACTIVE_JIRA_EPIC` from `.env`. This must match the `SCRUM-N` pattern and acts as the unifying sprint ID. If missing or invalid, halt and ask TPM.
 2. Read `SPRINT_REQUIREMENTS.md`, verify `sprint_id` matches branch.
 3. Update ledger: move `active_sprint` to `history`, write new sprint data.
 4. If `env_verified: false`, trigger Phase 0 first.
@@ -101,10 +101,10 @@ When the User requests a reset (NOT a wrap-up):
 ## 🧹 Sprint Wrap-Up Protocol (Pre-Merge)
 Execute when Phase 4 is complete and TPM requests wrap-up:
 
-1. **Archive:** Create `docs/archive/sprint_[N]/`.
-2. **Copy requirements** to archive.
-3. **Consolidate assumptions:** Write approved assumptions into archived `sprint_[N]_requirements.md`.
-4. **Generate summary** (see Archive Template below).
+1. **Archive:** Create `docs/archive/{sprint_id_lowercase}/` (e.g. `docs/archive/scrum-3/`).
+2. **Copy requirements** to archive: `docs/archive/{sprint_id_lowercase}/requirements.md`.
+3. **Consolidate assumptions:** Write approved assumptions into archived `requirements.md`.
+4. **Generate summary**: `docs/archive/{sprint_id_lowercase}/summary.md` (see Archive Template below).
 5. **Rule promotion:** Scan for "Global" rules → append to `CLAUDE.md`.
 6. **Update ledger:** Move `active_sprint` to `history`, increment version, set `active_sprint: null`.
 7. **Workspace reset:** Replace `SPRINT_REQUIREMENTS.md` with blank template. Delete temp files (`debug.log`, `FIX_LOG.md`, `ACTIVE_ASSUMPTIONS.md`).
@@ -143,7 +143,7 @@ Execute when Phase 4 is complete and TPM requests wrap-up:
 8. **Publish to Confluence (conditional):** Delegate to Devin (Mode 3) — publish archived requirements and summary to `sprints/SCRUM-N/` in Confluence. If MCP unavailable, Devin reports skip.
 
 ### Archive Template
-Write `docs/archive/sprint_[N]/sprint_[N]_summary.md`:
+Write `docs/archive/{sprint_id_lowercase}/summary.md`:
 
 ```markdown
 # Sprint [N] Archive — [Sprint Name]
