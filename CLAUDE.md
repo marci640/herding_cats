@@ -51,4 +51,4 @@ Permanent rules promoted from completed sprints:
 - **Score Threshold Assumptions:** If score thresholds are ambiguous, they must be explicitly captured as approved assumptions before SQL merge.
 - **Risk Classification Standards:** Any risk classification column must have `accepted_values` tests and documented business definitions.
 - **Intervention Output Standards:** Intervention-facing categorical outputs must always include `accepted_values` tests and business definitions.
-- **Confluence Version Tracking:** Whenever Confluence content is read into the process (requirements, assumptions, etc.), include a `Confluence Source: <page_title> v<N> — <URL>` line in the consuming file's header.
+- **Confluence Version Tracking:** Whenever Confluence content is read into the process (requirements, assumptions, etc.), include a `Confluence Source: <page_title> v<N> — <URL>` line in the consuming file's header.- **MSSQL via DuckDB:** Always use `(TYPE MSSQL)` in the ATTACH command and install the extension `FROM community`.
