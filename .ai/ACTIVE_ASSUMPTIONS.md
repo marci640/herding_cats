@@ -1,5 +1,5 @@
 # Active Assumptions — SCRUM-3
-
+<!-- Confluence Source: requirements v2 — https://fhir-healthcare.atlassian.net/wiki/spaces/~712020d364f26c180a47338114425b64719078/pages/1015810/requirements -->
 ## A1: MSSQL Extension Availability — RESOLVED
 1. **Ambiguity/Gap:** Requirements specify DuckDB MSSQL community extension but it returned HTTP 404 on DuckDB 1.4.2.
 2. **Decision:** Upgrade DuckDB from 1.4.2 → 1.4.4 to install the extension successfully and use `on-run-start` hooks.
