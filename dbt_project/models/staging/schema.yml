@@ -1,15 +1,162 @@
 version: 2
 
 models:
-  - name: stg_example
-    description: "Template staging model contract. Replace with sprint-specific staging models."
+  # -----------------------------------------------------------------
+  # MSSQL source tables (via on-run-start ATTACH as sql_server)
+  # Schema: sql_server.dbo.{table}
+  # -----------------------------------------------------------------
+  - name: stg_cats
+    description: "Staging model for cats table from MSSQL source (sql_server.dbo.cats). Contains cat profiles with judgmental ratings."
+    config:
+      materialized: table
     columns:
-      - name: id
-        description: "Primary key"
+      - name: cat_id
+        description: "Primary key — unique identifier for each cat"
         data_type: INTEGER
         tests:
           - unique
           - not_null
+      - name: name
+        description: "Name of the cat"
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: age_years
+        description: "Age of the cat in years"
+        data_type: "DECIMAL(4,1)"
+      - name: favorite_toy
+        description: "The cat's favorite toy"
+        data_type: VARCHAR
+      - name: judgmental_level
+        description: "How judgmental the cat is (integer scale)"
+        data_type: INTEGER
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: stg_reviews
+    description: "Staging model for reviews table from MSSQL source (sql_server.dbo.reviews). Cat reviews of seafood restaurants."
+    config:
+      materialized: table
+    columns:
+      - name: review_id
+        description: "Primary key — unique identifier for each review"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: cat_id
+        description: "Foreign key to cats table"
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: restaurant_id
+        description: "Foreign key to seafood_restaurants table"
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: paws_rating
+        description: "Paw-based rating text (e.g. 'Two Paws Way Up')"
+        data_type: VARCHAR
+      - name: hiss_count
+        description: "Number of hisses during the dining experience"
+        data_type: INTEGER
+      - name: review_text
+        description: "Text content of the cat's review"
+        data_type: VARCHAR
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: stg_seafood_restaurants
+    description: "Staging model for seafood_restaurants table from MSSQL source (sql_server.dbo.seafood_restaurants). Restaurant profiles."
+    config:
+      materialized: table
+    columns:
+      - name: restaurant_id
+        description: "Primary key — unique identifier for each restaurant"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Name of the restaurant"
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: neighborhood
+        description: "Neighborhood where the restaurant is located"
+        data_type: VARCHAR
+      - name: specialty_dish
+        description: "The restaurant's signature dish"
+        data_type: VARCHAR
+      - name: outdoor_seating_for_napping
+        description: "Whether the restaurant has outdoor seating suitable for cat napping"
+        data_type: BOOLEAN
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  # -----------------------------------------------------------------
+  # Seed source (local CSV — columns confirmed from Confluence)
+  # -----------------------------------------------------------------
+  - name: stg_restaurant_reviews
+    description: "Staging model for restaurant_reviews seed CSV. Contains restaurant ID and review score."
+    config:
+      materialized: table
+    columns:
+      - name: restaurant_id
+        description: "Primary key — unique restaurant identifier from seed CSV"
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: review
+        description: "Review score (integer rating)"
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  # -----------------------------------------------------------------
+  # S3 source (dogs.csv via httpfs — see A5)
+  # Schema confirmed by direct S3 inspection.
+  # -----------------------------------------------------------------
+  - name: stg_dogs
+    description: "Staging model for dogs.csv from S3 bucket cat-photos-2026. Read directly via DuckDB httpfs extension."
+    config:
+      materialized: table
+    columns:
+      - name: dog_id
+        description: "Primary key — unique identifier for each dog"
+        data_type: BIGINT
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Name of the dog"
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: age_years
+        description: "Age of the dog in years"
+        data_type: DOUBLE
+      - name: favorite_toy
+        description: "The dog's favorite toy"
+        data_type: VARCHAR
+      - name: judgmental_level
+        description: "How judgmental the dog is (integer scale)"
+        data_type: BIGINT
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP

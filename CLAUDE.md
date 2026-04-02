@@ -24,6 +24,7 @@
 - **Naming:** ALL database objects MUST be `snake_case`. No `CamelCase`, no `PascalCase`.
 - **Handoffs:** The Transformer is FORBIDDEN from writing SQL until the Architect has produced a `schema.yml`.
 - **Validation:** No PR can be generated unless the Auditor confirms 100% test coverage for Primary Keys.
+- **Virtual Environment:** NEVER use system `python3`, `pip3`, or globally installed `dbt`. Always use `venv/bin/python`, `venv/bin/pip`, `venv/bin/dbt`. If `venv/bin/dbt` does not exist, halt and alert the user — do not fall back to system installs.
 
 ## System of Record (State Management)
 - **Primary Logic:** `/.ai/SPRINT_REQUIREMENTS.md` (Updated by TPM)
@@ -50,3 +51,4 @@ Permanent rules promoted from completed sprints:
 - **Score Threshold Assumptions:** If score thresholds are ambiguous, they must be explicitly captured as approved assumptions before SQL merge.
 - **Risk Classification Standards:** Any risk classification column must have `accepted_values` tests and documented business definitions.
 - **Intervention Output Standards:** Intervention-facing categorical outputs must always include `accepted_values` tests and business definitions.
+- **Confluence Version Tracking:** Whenever Confluence content is read into the process (requirements, assumptions, etc.), include a `Confluence Source: <page_title> v<N> — <URL>` line in the consuming file's header.- **MSSQL via DuckDB:** Always use `(TYPE MSSQL)` in the ATTACH command and install the extension `FROM community`.

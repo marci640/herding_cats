@@ -19,8 +19,8 @@ The project is designed to be **"Copilot-Native."** It uses hidden and specializ
 ## Running Sprints (Detailed Workflow)
 
 ### 1) Prepare the sprint contract
-b
-> **Convention: 1 Sprint = 1 Epic.** In agentic workflows, AI agents compress development velocity enough that a full Epic (e.g., a complete feature or pipeline) can ship in a single sprint timebox. This project enforces a 1:1 mapping: the **Jira Epic ID** (`SCRUM-N`) is the **branch name**, the **sprint ID**, and the **ledger key**. Sub-tasks live under the epic in Jira but the sprint identity is always the epic.
+
+> **Convention: 1 Sprint = 1 Epic.** In agentic workflows, AI agents compress development velocity enough that a full Epic (e.g., a complete feature or pipeline) can ship in a single sprint timebox. This project enforces a 1:1 mapping defined by the `ACTIVE_JIRA_EPIC` variable in your `.env` file. This ID (`SCRUM-N`) acts as the **sprint ID** and **ledger key**. Sub-tasks live under the epic in Jira but the sprint identity is always driven by the epic ID in `.env`.
 
 Before chat execution, fill `.ai/SPRINT_REQUIREMENTS.md` completely:
 - business rules
@@ -50,9 +50,10 @@ The orchestrator enforces sequencing and quality gates:
 - DevOps validates DAG syntax and coverage
 
 Important gate behavior:
-- If assumptions require TPM review, execution pauses at `HITL_PENDING`
-- Resume only after `approved-by-tpm` label is present
-- On resume, latest `.ai/ACTIVE_ASSUMPTIONS.md` from the remote branch is synced locally before Transformer continues
+- If assumptions require TPM review, they are published to **Confluence** (`sprints/SCRUM-N/assumptions`) as the canonical review surface. Non-technical stakeholders can edit there.
+- The GitHub PR links to the Confluence page and carries the approval signal (`approved-by-tpm` label).
+- Resume only after `approved-by-tpm` label is present on the PR.
+- On resume, the agent fetches the latest assumptions from Confluence (not the PR body) and syncs locally before continuing.
 - Original sprint requirements remain the business source of intent; Architect and Auditor validate alignment against them.
 - Transformer should remain contract-only (`schema.yml` + approved assumptions) to prevent interpretation drift.
 - Upstream readiness issues must be resolved before full `dbt run`/`dbt test`
@@ -61,13 +62,15 @@ Important gate behavior:
 
 Use `continue` (or `continue sprint`) after you apply TPM label or fix blockers. The lead prompt re-checks gate conditions and proceeds from the correct phase.
 
+**Mid-sprint re-entry:** If a blocker is resolved or requirements change on Confluence during HITL, use the dedicated re-entry prompts (see Command Cheat Sheet) to re-run the Architect with fresh discovery.
+
 ### 5) Wrap up before merge
 
 Wrap-up archives sprint artifacts, promotes permanent rules, updates ledger history, and resets `.ai/SPRINT_REQUIREMENTS.md` for the next sprint.
 
 Outputs include:
-- `docs/archive/sprint_[N]/sprint_[N]_requirements.md`
-- `docs/archive/sprint_[N]/sprint_[N]_summary.md`
+- `docs/archive/{sprint_id_lowercase}/requirements.md`
+- `docs/archive/{sprint_id_lowercase}/summary.md`
 - `active_sprint: null` in ledger
 
 ## Advanced: Individual Phase Execution
@@ -79,16 +82,18 @@ For debugging or running a single phase in isolation:
 | Run Architect only | `run #file:agents/01_architect.md` |
 | Run Transformer only | `run #file:agents/02_transformer.md` |
 | Run Auditor only | `audit via #file:agents/03_auditor.md` |
-| Run DevOps only | `execute #file:agents/04_devops.md` |
+| Run DevOps (env/DAG) | `execute #file:agents/04_devops.md` |
 
 ## Command Cheat Sheet
 
 | Action | Command |
 |---|---|
-| Draft requirements from Jira + Confluence | *"Read the current branch name, fetch the matching Jira epic, and read the `sprint requirements` page from `sprints/SCRUM-N/` in Confluence. Draft `.ai/SPRINT_REQUIREMENTS.md` from both."* |
+| Draft requirements from Jira + Confluence | *"Read the current branch name, fetch the matching Jira epic, and read the `requirements` page from `sprints/SCRUM-N/` in Confluence. Draft `.ai/SPRINT_REQUIREMENTS.md` from both."* |
 | Initialize sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Initialize sprint from .ai/SPRINT_REQUIREMENTS.md.` |
 | Run full sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Run full sprint.` |
 | Continue after HITL/blocker | `continue sprint` |
+| Blocker resolved (re-run Architect) | *"Blocker resolved. Re-run Phase 1 from discovery."* |
+| Requirements revised on Confluence | *"Requirements updated. Re-run from Phase 1."* |
 | Wrap up sprint | `Use #file:.ai/LEAD_PROMPT.md to execute the Sprint Wrap-Up.` |
 | Reset current sprint | `Use #file:.ai/LEAD_PROMPT.md to execute Sprint Reset Protocol.` |
 

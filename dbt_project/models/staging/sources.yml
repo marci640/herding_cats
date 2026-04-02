@@ -9,3 +9,17 @@ sources:
     tables:
       - name: raw_api_data
         description: Raw API response data loaded by dlt.
+
+  - name: sql_server
+    description: >
+      MSSQL database attached via on-run-start hooks in dbt_project.yml.
+      Connected as sql_server.dbo.{table} using DuckDB MSSQL community extension.
+    database: sql_server
+    schema: dbo
+    tables:
+      - name: cats
+        description: "Cat profiles with names, ages, favorite toys, and judgmental levels."
+      - name: reviews
+        description: "Cat reviews of seafood restaurants with paw ratings and hiss counts."
+      - name: seafood_restaurants
+        description: "Seafood restaurant profiles with neighborhoods and napping suitability."
