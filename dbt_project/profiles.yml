@@ -3,7 +3,7 @@ herding_cats:
   outputs:
     dev:
       type: duckdb
-      path: "warehouse.duckdb"
+      path: "{{ env_var('DBT_DUCKDB_PATH') }}"
       schema: main
       threads: 4
       extensions:
