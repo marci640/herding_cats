@@ -50,9 +50,10 @@ The orchestrator enforces sequencing and quality gates:
 - DevOps validates DAG syntax and coverage
 
 Important gate behavior:
-- If assumptions require TPM review, they are published to **Confluence** (`sprints/SCRUM-N/assumptions`) as the canonical review surface. Non-technical stakeholders can edit there.
+- If assumptions require TPM review, they are published to **Confluence** (`sprints/*/SCRUM-N/assumptions SCRUM-N`) as the canonical review surface. Non-technical stakeholders can edit there.
 - The GitHub PR links to the Confluence page and carries the approval signal (`approved-by-tpm` label).
 - Resume only after `approved-by-tpm` label is present on the PR.
+- Wrap-up must not bypass an unresolved HITL gate; if assumptions were routed through Phase 1.5, the `approved-by-tpm` label is still required before merge or wrap-up.
 - On resume, the agent fetches the latest assumptions from Confluence (not the PR body) and syncs locally before continuing.
 - Original sprint requirements remain the business source of intent; Architect and Auditor validate alignment against them.
 - Transformer should remain contract-only (`schema.yml` + approved assumptions) to prevent interpretation drift.
@@ -88,12 +89,12 @@ For debugging or running a single phase in isolation:
 
 | Action | Command |
 |---|---|
-| Draft requirements from Jira + Confluence | *"Read the current branch name, fetch the matching Jira epic, and read the `requirements` page from `sprints/SCRUM-N/` in Confluence. Draft `.ai/SPRINT_REQUIREMENTS.md` from both."* |
+| Draft requirements from Jira + Confluence | *"Read the ACTIVE_JIRA_EPIC from .env, fetch the matching Jira epic, and read the `requirements SCRUM-N` page from `sprints/*/SCRUM-N/` in Confluence. Draft `.ai/SPRINT_REQUIREMENTS.md` from both."* |
 | Initialize sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Initialize sprint from .ai/SPRINT_REQUIREMENTS.md.` |
 | Run full sprint | `Read #file:.ai/LEAD_PROMPT.md and CLAUDE.md. Run full sprint.` |
 | Continue after HITL/blocker | `continue sprint` |
 | Blocker resolved (re-run Architect) | *"Blocker resolved. Re-run Phase 1 from discovery."* |
-| Requirements revised on Confluence | *"Requirements updated. Re-run from Phase 1."* |
+| Requirements revised on Confluence | *"Requirements updated. Re-run from Phase 1."* *(re-fetch `requirements SCRUM-N`, update business-source sections, preserve compatible AI-generated requirements unless superseded)* |
 | Wrap up sprint | `Use #file:.ai/LEAD_PROMPT.md to execute the Sprint Wrap-Up.` |
 | Reset current sprint | `Use #file:.ai/LEAD_PROMPT.md to execute Sprint Reset Protocol.` |
 

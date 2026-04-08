@@ -54,13 +54,15 @@ When generating `dags/dbt_pipeline_dag.py`:
 Run this mode when the Lead Agent needs to publish content to Confluence.
 
 ### Inputs (provided by Lead Agent)
-- **target:** Confluence page path (e.g. `sprints/SCRUM-N/assumptions`)
+- **target:** Confluence page path using the sprint folder + page title convention (e.g. `sprints/*/SCRUM-N/requirements SCRUM-N` or `sprints/*/SCRUM-N/assumptions SCRUM-N`)
 - **content:** Markdown content to publish, OR path to a local file
 
 ### Steps
-1. Check if the page exists via MCP (`get-page`).
-2. If exists → `update-page` with the provided content.
-3. If missing → `create-page` under the correct parent path.
+1. Resolve the sprint folder path `sprints/*/SCRUM-N/`.
+2. Treat the final path segment as the page title. Page titles follow the convention `<page_type> SCRUM-N`.
+3. Check if the page exists via MCP (`get-page`).
+4. If exists → `update-page` with the provided content.
+5. If missing → `create-page` under the correct sprint folder.
 4. Report: `PUBLISH OK — [page path] (version N).`
 
 ### Error Handling
