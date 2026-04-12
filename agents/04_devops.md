@@ -66,9 +66,24 @@ Run this mode when the Lead Agent needs to publish content to Confluence.
 3. Read the existing page body via MCP.
 4. Preserve the `TEAM INPUT` section exactly as authored by the team.
 5. Fully replace only the `AI OUTPUT` section with the provided content.
-6. If the page exists → `update-page` with the merged body.
-7. If the page is missing → create it in `SUDS` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`.
+6. If the page exists → `update-page` with the merged body. Append a changelog entry (see below).
+7. If the page is missing → create it in `SUDS` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`. Include an initial changelog entry.
 8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_EPIC] (version N).`
+
+### Changelog Section
+Every page must end with a `## Changelog` section. On each publish, append a new line:
+
+```
+---
+## Changelog
+| Timestamp | Actor | State |
+|---|---|---|
+| 2026-04-12T14:30:00Z | `claude` | `generated` |
+```
+
+- Always append to the existing table — never clear previous entries.
+- Actor is always `` `claude` `` for AI publishes; humans add their own entries manually.
+- State is always `` `generated` `` for AI publishes.
 
 ### Error Handling
 - If MCP server is unavailable → report `CONFLUENCE UNAVAILABLE — skipping publish` and return. Do not fail the sprint.
