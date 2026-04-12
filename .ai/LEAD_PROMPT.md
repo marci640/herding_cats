@@ -14,6 +14,24 @@ Precedence order for task execution and history retrieval:
 3. Ledger `history` — ONLY if requirements are silent or a conflict is detected.
 4. Never use `*_summary.md` files for technical logic or code generation.
 
+## Confluence Collaboration Protocol
+Treat Confluence as a collaborative IDE with two managed sections:
+- `TEAM INPUT` is human-owned source material. Read it as authoritative and never overwrite it.
+- `AI OUTPUT` is AI-managed working text. On each `generated` pass, overwrite this section completely to keep it clean and current.
+
+State handling rules:
+- When a human marks the page `ready`, treat the entire current page state as the baseline truth for the next generation pass.
+- If `TEAM INPUT` conflicts with older `AI OUTPUT`, prioritize the human edit.
+- During iterative `ready` → `generated` passes, preserve keyword anchors from `TEAM INPUT` by carrying them into generated text as `HUMAN: [anchor_key]` pointers followed by the verbatim anchored content.
+- On the final `approved` pass, remove transient `HUMAN:` pointers while preserving the anchored text itself.
+
+Confluence discovery rules:
+- Read `ACTIVE_JIRA_EPIC` from `.env` before any Confluence lookup.
+- Search Confluence in the `SUDS` space.
+- Requirements page lookup: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_EPIC}"`.
+- Assumptions page lookup: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_EPIC}"`.
+- Do not depend on a sprint-folder path as the primary lookup mechanism.
+
 # OPERATING PROTOCOL
 1. **Initialize:** Read `CLAUDE.md` for project guardrails (includes venv rules, naming conventions, testing standards).
 2. **Delegate:** Send tasks to workers via their persona files in `/agents/`.
@@ -42,11 +60,11 @@ Pattern: `git add -A && git commit -m "message" && git push`
 2. **Phase 1 (Architect):** Archie reads requirements → generates `schema.yml`. MUST generate `ACTIVE_ASSUMPTIONS.md` if logic is ambiguous.
 3. **Phase 1.5 (Assumption Gate):**
    - **Format check:** Every assumption needs `Ambiguity/Gap`, `Decision`, `Rationale`, `Implementation Impact`, `TPM Action`.
-   - **Publish to Confluence:** Delegate to Devin (Mode 3, target: `sprints/*/SCRUM-N/assumptions SCRUM-N`, content: `ACTIVE_ASSUMPTIONS.md`). This is the canonical review surface — non-technical stakeholders edit here.
+   - **Publish to Confluence:** Delegate to Devin (Mode 3, page type: `assumptions`, content: `ACTIVE_ASSUMPTIONS.md`). Devin must preserve `TEAM INPUT`, fully replace `AI OUTPUT`, and publish to the Confluence page discovered from `ACTIVE_JIRA_EPIC` in `SUDS`. This is the canonical review surface — non-technical stakeholders edit there.
    - **PR:** Check `gh pr view --json url`. If missing, create with `gh pr create --fill --assignee "@me" --reviewer "marci640"`. PR body should link to the Confluence assumptions page.
    - Set ledger → `HITL_PENDING`. Halt and notify TPM.
    - **On resume:** Verify `approved-by-tpm` label on PR. Then:
-     1. **Fetch from Confluence:** Read the `sprints/*/SCRUM-N/assumptions SCRUM-N` page via MCP. Overwrite local `.ai/ACTIVE_ASSUMPTIONS.md` with the Confluence content. Confluence is the source of truth — TPM/stakeholders may have edited values inline. Include the `Confluence Source:` version link in the file header.
+     1. **Fetch from Confluence:** Read the `assumptions` page via MCP using the `ACTIVE_JIRA_EPIC` search rules. Treat the full current page state as the source of truth. Sync local `.ai/ACTIVE_ASSUMPTIONS.md` from the current Confluence content, incorporating direct stakeholder edits and preserving anchored text verbatim. Include the `Confluence Source:` version link in the file header.
      2. **Diff:** Compare fetched assumptions against the committed version.
         - Values changed → route back to Archie for schema patch.
         - All approved, no edits → proceed to Phase 2.
@@ -71,17 +89,18 @@ When the HITL gate is interrupted by a blocker resolution or requirements change
 | Trigger | TPM Prompt | What Changes |
 |---------|-----------|--------------|
 | **Blocker resolved** (e.g. dependency upgrade, config fix) | *"Blocker resolved. Re-run Phase 1 from discovery."* | TPM commits fix → re-discover affected sources |
-| **Requirements revised** on Confluence | *"Requirements updated. Re-run from Phase 1."* | Re-fetch `requirements SCRUM-N` → merge/re-draft `SPRINT_REQUIREMENTS.md` |
+| **Requirements revised** on Confluence | *"Requirements updated. Re-run from Phase 1."* | Re-fetch the `requirements` page discovered from `ACTIVE_JIRA_EPIC` → merge/re-draft `SPRINT_REQUIREMENTS.md` |
 
 **Re-entry steps (both triggers):**
-1. **If requirements trigger:** Re-fetch `requirements SCRUM-N` via MCP and compare it against the current `SPRINT_REQUIREMENTS.md`.
-   - Confluence remains the business source of intent.
+1. **If requirements trigger:** Re-fetch the `requirements` page via MCP using the `ACTIVE_JIRA_EPIC` search rules and compare it against the current `SPRINT_REQUIREMENTS.md`.
+   - Confluence remains the business source of intent. When the page is marked `ready`, treat its full current state as the baseline truth for regeneration.
    - Update the business-owned sections from Confluence (`Business Rules`, `Transformation Logic`, `New Models / Sources`, `Execution Prerequisites`, `Acceptance Criteria`).
    - Preserve AI-generated clarifications or structure that do **not** conflict with the revised Confluence content.
+   - If Confluence includes keyword anchors in `TEAM INPUT`, carry the anchored text into the regenerated output verbatim.
    - Do **not** silently discard approved assumptions or other local synthesis unless the revised Confluence content explicitly supersedes them.
    - Update the `Confluence Source:` header with the new version link.
 2. **Re-run Architect (Phase 1):** Full re-discovery. Regenerate `schema.yml` + `ACTIVE_ASSUMPTIONS.md`. Carry forward previously resolved assumptions.
-3. **Publish to Confluence:** Delegate to Devin (Mode 3, target: `sprints/*/SCRUM-N/assumptions SCRUM-N`, content: regenerated `ACTIVE_ASSUMPTIONS.md`).
+3. **Publish to Confluence:** Delegate to Devin (Mode 3, page type: `assumptions`, content: regenerated `ACTIVE_ASSUMPTIONS.md`). Devin preserves `TEAM INPUT` and fully replaces `AI OUTPUT` on the discovered assumptions page.
 4. **Update PR:** Post comment + re-request review (PR body just links to Confluence).
    - `gh pr comment <N> --body "Assumptions regenerated after [trigger]. [summary]. Review at [Confluence link]."`
    - `gh pr edit <N> --add-reviewer "marci640"`
@@ -149,8 +168,6 @@ Execute when Phase 4 is complete and TPM requests wrap-up:
 ### Permanent Rules (will be promoted to CLAUDE.md on sprint close)
 [List any rules that should become global project standards]
 ```
-
-8. **Publish to Confluence (conditional):** Delegate to Devin (Mode 3) — publish archived requirements and summary to `sprints/*/SCRUM-N/` in Confluence. If MCP unavailable, Devin reports skip.
 
 ### Archive Template
 Write `docs/archive/{sprint_id_lowercase}/summary.md`:

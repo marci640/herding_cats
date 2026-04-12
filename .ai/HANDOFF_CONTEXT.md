@@ -27,9 +27,13 @@ This repository is a reusable **Copilot-first ETL platform template** built from
 - Use the project virtual environment only: `venv/bin/python`, `venv/bin/pip`, `venv/bin/dbt`.
 
 ## Confluence Integration
-- **Page structure per sprint:** `sprints/SCRUM-N/` with two pages:
-  - `requirements` — authored and edited by TPM/stakeholders only
-  - `assumptions` — initial draft by agent, edited by both agent and stakeholders
+- **Discovery model:** Search the `SUDS` space using `ACTIVE_JIRA_EPIC` from `.env`.
+- **Page structure:** each Confluence page is split into:
+  - `TEAM INPUT` — authored and edited by TPM/stakeholders only; always preserved verbatim
+  - `AI OUTPUT` — initial draft by agent; fully replaced on each `generated` pass
+- **Lookup rules:**
+  - `requirements`: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_EPIC}"`
+  - `assumptions`: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_EPIC}"`
 - **Version tracking:** When Confluence content is read into the process, the consuming file (`SPRINT_REQUIREMENTS.md` or `ACTIVE_ASSUMPTIONS.md`) includes a `Confluence Source: <page_title> v<N> — <URL>` header line.
 - **Publishing:** All Confluence writes go through Devin (04_devops.md Mode 3). If MCP is unavailable, the sprint continues — publishing is non-blocking.
 
@@ -78,8 +82,8 @@ If a sprint is active, continue from the ledger state. If no sprint is active, s
 - **LEAD_PROMPT.md** consolidated from 217→167 lines across multiple passes
 - **Confluence version tracking:** Provenance lives in consuming files (header line), not in the ledger
 - **Devin Mode 3** simplified to single `publish` action (~15 lines, down from ~40)
-- **Removed:** `requirements` page (unnecessary — assumptions already surface misinterpretation)
-- **Removed:** `add-info-bar` and `update` Confluence actions (dead code)
+- **Confluence collaboration model:** Lead + DevOps now treat Confluence as `TEAM INPUT` + `AI OUTPUT`, with `ready` as the regeneration baseline and `approved` as the final scrub point.
+- **Confluence lookup:** Lead + DevOps now discover `requirements` and `assumptions` pages by `ACTIVE_JIRA_EPIC` search in `SUDS`.
 - **Simplified prompts:** Blocker + requirements-revised prompts no longer require IDs (agent derives from context)
 - **Assumptions Format Consistency:** Enforced the full 5-item format (including `Ambiguity/Gap`) across `01_architect.md` and `LEAD_PROMPT.md` to prevent generation gaps.
 - **Resolved Assumptions Formatting:** Added a strict rule to `01_architect.md` to ensure carried-forward/resolved assumptions retain their exact original 5-item structure (only updating the `TPM Action` field), rather than summarizing into an "Original Issue / Resolution" format.

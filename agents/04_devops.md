@@ -54,17 +54,22 @@ When generating `dags/dbt_pipeline_dag.py`:
 Run this mode when the Lead Agent needs to publish content to Confluence.
 
 ### Inputs (provided by Lead Agent)
-- **target:** Confluence page path using the sprint folder + page title convention (e.g. `sprints/*/SCRUM-N/requirements SCRUM-N` or `sprints/*/SCRUM-N/assumptions SCRUM-N`)
+- **page_type:** Confluence document type to manage (`requirements`, `assumptions`, or another explicitly named page type)
 - **content:** Markdown content to publish, OR path to a local file
 
 ### Steps
-1. Resolve the sprint folder path `sprints/*/SCRUM-N/`.
-2. Treat the final path segment as the page title. Page titles follow the convention `<page_type> SCRUM-N`.
-3. Check if the page exists via MCP (`get-page`).
-4. If exists → `update-page` with the provided content.
-5. If missing → `create-page` under the correct sprint folder.
-4. Report: `PUBLISH OK — [page path] (version N).`
+1. Read `ACTIVE_JIRA_EPIC` from `.env`. Halt and report if it is missing.
+2. Search the `SUDS` Confluence space for the page using the page type + epic lookup rules:
+   - Requirements page: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_EPIC}"`
+   - Assumptions page: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_EPIC}"`
+   - For any other page type, search `title ~ "<page_type>" AND text ~ "${ACTIVE_JIRA_EPIC}"`
+3. Read the existing page body via MCP.
+4. Preserve the `TEAM INPUT` section exactly as authored by the team.
+5. Fully replace only the `AI OUTPUT` section with the provided content.
+6. If the page exists → `update-page` with the merged body.
+7. If the page is missing → create it in `SUDS` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`.
+8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_EPIC] (version N).`
 
 ### Error Handling
 - If MCP server is unavailable → report `CONFLUENCE UNAVAILABLE — skipping publish` and return. Do not fail the sprint.
-- If parent path is missing → report the error and halt.
+- If the page cannot be found and creation fails → report the error and halt.
