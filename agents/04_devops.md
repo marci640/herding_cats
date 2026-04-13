@@ -58,17 +58,17 @@ Run this mode when the Lead Agent needs to publish content to Confluence.
 - **content:** Markdown content to publish, OR path to a local file
 
 ### Steps
-1. Read `ACTIVE_JIRA_EPIC` from `.env`. Halt and report if it is missing.
-2. Search the `SUDS` Confluence space for the page using the page type + epic lookup rules:
-   - Requirements page: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_EPIC}"`
-   - Assumptions page: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_EPIC}"`
-   - For any other page type, search `title ~ "<page_type>" AND text ~ "${ACTIVE_JIRA_EPIC}"`
+1. Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env`. Halt and report if either is missing.
+2. Search the `CONFLUENCE_SPACE` Confluence space for the page using the page type + ID lookup rules:
+   - Requirements page: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`
+   - Assumptions page: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`
+   - For any other page type, search `title ~ "<page_type>" AND text ~ "${ACTIVE_JIRA_ID}"`
 3. Read the existing page body via MCP.
 4. Preserve the `TEAM INPUT` section exactly as authored by the team.
 5. Fully replace only the `AI OUTPUT` section with the provided content.
 6. If the page exists → `update-page` with the merged body. Append a changelog entry (see below).
-7. If the page is missing → create it in `SUDS` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`. Include an initial changelog entry.
-8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_EPIC] (version N).`
+7. If the page is missing → create it in `CONFLUENCE_SPACE` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`. Include an initial changelog entry.
+8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_ID] (version N).`
 
 ### Changelog Section
 Every page must end with a `## Changelog` section. On each publish, append a new line:

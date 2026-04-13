@@ -17,7 +17,7 @@ A **Technical PM** orchestrates a data engineering lifecycle using **GitHub Copi
 
 ## Running Sprints
 
-> **Convention: 1 Sprint = 1 Epic.** The `ACTIVE_JIRA_EPIC` in `.env` (`SCRUM-N`) is the sprint ID and ledger key.
+> **Convention:** `ACTIVE_JIRA_ID` in `.env` is the sprint ID, branch name, and Confluence lookup key. A sprint can cover work across multiple Jira issues, and a Jira issue may span multiple sprints.
 
 ### Phase 0: Init
 
@@ -71,6 +71,7 @@ Archives sprint artifacts to `docs/archive/`, promotes permanent rules to `CLAUD
      }
    }
    ```
+   Also set `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` in `.env`.
 3. Restart VS Code → check OUTPUT panel for "Discovered N tools."
 
 ## Troubleshooting

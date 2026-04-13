@@ -8,7 +8,7 @@ Copilot-first ETL platform template using dbt + DuckDB + Airflow orchestrated by
 ### Sprint Lifecycle
 Phases: **0 (Init) → 1 (Architect) → 1.5 (Assumptions) → 2 (Transformer) → 3 (Auditor) → 4 (DevOps) → Wrap-up**
 
-- `ACTIVE_JIRA_EPIC` in `.env` is the sprint ID (`SCRUM-N`).
+- `ACTIVE_JIRA_ID` in `.env` is the sprint ID and branch name. A sprint can cover multiple Jira issues; a Jira issue can span multiple sprints.
 - Phase 0 verifies the environment and drafts requirements from Confluence.
 - Two HITL gates use Confluence as the collaboration surface:
   - **Requirements** (Human-Led): `ready` → `generated` → loop → `approved`
@@ -18,7 +18,7 @@ Phases: **0 (Init) → 1 (Architect) → 1.5 (Assumptions) → 2 (Transformer) �
 
 ### Confluence Model
 - Pages split into `TEAM INPUT` (human-owned, never overwritten) and `AI OUTPUT` (fully replaced on each `generated` pass).
-- Discovery: search `SUDS` space by page type + `ACTIVE_JIRA_EPIC`.
+- Discovery: search `CONFLUENCE_SPACE` (from `.env`) by page type + `ACTIVE_JIRA_ID`.
 - Every publish appends a `## Changelog` entry via `update-page`.
 - Publishing is non-blocking — if MCP is unavailable, the sprint continues.
 

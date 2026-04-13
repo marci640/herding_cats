@@ -26,10 +26,10 @@ State handling rules:
 - On the final `approved` pass, remove transient `HUMAN:` pointers while preserving the anchored text itself.
 
 Confluence discovery rules:
-- Read `ACTIVE_JIRA_EPIC` from `.env` before any Confluence lookup.
-- Search Confluence in the `SUDS` space.
-- Requirements page lookup: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_EPIC}"`.
-- Assumptions page lookup: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_EPIC}"`.
+- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env` before any Confluence lookup.
+- Search Confluence in the `CONFLUENCE_SPACE` space.
+- Requirements page lookup: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`.
+- Assumptions page lookup: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`.
 - Do not depend on a sprint-folder path as the primary lookup mechanism.
 
 # OPERATING PROTOCOL
@@ -50,12 +50,11 @@ Pattern: `git add -A && git commit -m "message" && git push`
 **Hard gate:** Before PR actions or phase transitions, run `git status -sb`. If branch is `ahead`, push first.
 
 ## 🔄 Sprint Synchronization (Sprint Start)
-1. **Derive `sprint_id`:** Read `ACTIVE_JIRA_EPIC` from `.env`. This must match the `SCRUM-N` pattern and acts as the unifying sprint ID. If missing or invalid, halt and ask TPM.
+1. **Derive `sprint_id`:** Read `ACTIVE_JIRA_ID` from `.env`. This is the sprint ID, branch name, and Confluence lookup key. If missing, halt and ask TPM.
 2. Update ledger: move `active_sprint` to `history`, initialize new sprint data:
    ```json
    "active_sprint": {
-     "sprint_id": "SCRUM-N",
-     "branch": "SCRUM-N",
+     "sprint_id": "JIRA-1",
      "started": "YYYY-MM-DD",
      "requirements_state": null,
      "assumptions_state": null,
@@ -63,7 +62,7 @@ Pattern: `git add -A && git commit -m "message" && git push`
      "phase_log": []
    }
    ```
-   Valid states for `requirements_state` and `assumptions_state`: `null` → `generated` → `approved`.
+   `sprint_id` is always `ACTIVE_JIRA_ID` from `.env` — this is also the branch name.
 3. Trigger Phase 0 (env verification + requirements draft). Halt and wait for `requirements approved` before Phase 1.
 
 ## ⛓️ Execution Sequencing & Gates
@@ -91,7 +90,7 @@ Flow: `ready` → `generated` → *(loop)* → `approved`
 This workflow runs during Phase 0 init and on any subsequent `requirements ready` signal (including mid-sprint revisions).
 
 **On `requirements ready`:**
-1. Fetch the `requirements` page from Confluence via `ACTIVE_JIRA_EPIC` discovery rules.
+1. Fetch the `requirements` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
 2. Read `TEAM INPUT` as the authoritative business intent.
 3. Generate/update `SPRINT_REQUIREMENTS.md` from the Confluence content, mapping `TEAM INPUT` into the structured template sections (`Business Rules`, `Transformation Logic`, `New Models / Sources`, `Execution Prerequisites`, `Acceptance Criteria`).
 4. Preserve AI-generated clarifications or structure that do **not** conflict with the Confluence content. If Confluence includes keyword anchors in `TEAM INPUT`, carry anchored text verbatim.
@@ -118,7 +117,7 @@ This workflow runs at Phase 1.5, triggered automatically after the Architect pro
 4. Set `active_sprint.assumptions_state` → `generated`. Halt and notify TPM.
 
 **On `assumptions ready`:**
-1. Fetch the `assumptions` page from Confluence via `ACTIVE_JIRA_EPIC` discovery rules.
+1. Fetch the `assumptions` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
 2. Read team answers/edits from `TEAM INPUT` and any direct edits to `AI OUTPUT`.
 3. Regenerate `ACTIVE_ASSUMPTIONS.md`, incorporating answers and resolving questions. Carry forward previously resolved assumptions.
 4. Route changes back to Archie for `schema.yml` patch if assumption values changed.
@@ -165,9 +164,9 @@ Execute when Phase 4 is complete and TPM requests wrap-up:
 
 ```markdown
 ## Sprint Requirements
-<!-- Sprint ID: [SCRUM-N] | Started: [DATE] -->
+<!-- Sprint ID: [JIRA-1] | Started: [DATE] -->
 <!-- Confluence Source: [page_title] v[N] — [versioned URL] -->
-**Sprint ID:** [SCRUM-N]
+**Sprint ID:** [JIRA-1]
 
 ### Business Rules
 [Define the business logic and constraints for this sprint]
@@ -201,7 +200,7 @@ Write `docs/archive/{sprint_id_lowercase}/summary.md`:
 # Sprint [N] Archive — [Sprint Name]
 **Closed:** [date]
 **Version:** [semver]
-**Branch:** `[branch_name]`
+**Branch:** `[sprint_id]`
 
 ## Business Rules Applied
 [list each constraint and transformation rule]
