@@ -54,15 +54,37 @@ When generating `dags/dbt_pipeline_dag.py`:
 Run this mode when the Lead Agent needs to publish content to Confluence.
 
 ### Inputs (provided by Lead Agent)
-- **target:** Confluence page path (e.g. `sprints/SCRUM-N/assumptions`)
+- **page_type:** Confluence document type to manage (`requirements`, `assumptions`, or another explicitly named page type)
 - **content:** Markdown content to publish, OR path to a local file
 
 ### Steps
-1. Check if the page exists via MCP (`get-page`).
-2. If exists → `update-page` with the provided content.
-3. If missing → `create-page` under the correct parent path.
-4. Report: `PUBLISH OK — [page path] (version N).`
+1. Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env`. Halt and report if either is missing.
+2. Search the `CONFLUENCE_SPACE` Confluence space for the page using the page type + ID lookup rules:
+   - Requirements page: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`
+   - Assumptions page: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`
+   - For any other page type, search `title ~ "<page_type>" AND text ~ "${ACTIVE_JIRA_ID}"`
+3. Read the existing page body via MCP.
+4. Preserve the `TEAM INPUT` section exactly as authored by the team.
+5. Fully replace only the `AI OUTPUT` section with the provided content.
+6. If the page exists → `update-page` with the merged body. Append a changelog entry (see below).
+7. If the page is missing → create it in `CONFLUENCE_SPACE` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`. Include an initial changelog entry.
+8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_ID] (version N).`
+
+### Changelog Section
+Every page must end with a `## Changelog` section. On each publish, append a new line:
+
+```
+---
+## Changelog
+| Timestamp | Actor | State |
+|---|---|---|
+| 2026-04-12T14:30:00Z | `claude` | `generated` |
+```
+
+- Always append to the existing table — never clear previous entries.
+- Actor is always `` `claude` `` for AI publishes; humans add their own entries manually.
+- State is always `` `generated` `` for AI publishes.
 
 ### Error Handling
 - If MCP server is unavailable → report `CONFLUENCE UNAVAILABLE — skipping publish` and return. Do not fail the sprint.
-- If parent path is missing → report the error and halt.
+- If the page cannot be found and creation fails → report the error and halt.

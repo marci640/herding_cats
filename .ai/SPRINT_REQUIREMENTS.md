@@ -1,7 +1,7 @@
 ## Sprint Requirements
-<!-- Sprint ID: [SCRUM-N] | Started: [DATE] -->
+<!-- Sprint ID: [JIRA-1] | Started: [DATE] -->
 <!-- Confluence Source: [page_title] v[N] — [versioned URL] -->
-**Sprint ID:** [SCRUM-N]
+**Sprint ID:** [JIRA-1]
 
 ### Business Rules
 [Define the business logic and constraints for this sprint]
