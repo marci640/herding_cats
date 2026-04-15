@@ -2,7 +2,7 @@
   "project_metadata": {
     "project": "herding_cats",
     "current_version": "0.1.1",
-    "last_updated": "2026-03-31"
+    "last_updated": "2026-04-15"
   },
   "environment_state": {
     "python_version": "3.11",
@@ -14,9 +14,30 @@
     ],
     "database": "duckdb",
     "env_verified": true,
-    "last_verified": "2026-03-30"
+    "last_verified": "2026-04-15"
   },
-  "active_sprint": null,
+  "active_sprint": {
+    "sprint_id": "SCRUM-5",
+    "name": "Sprint 05 — LA API restaurant pipeline",
+    "branch": "SCRUM-5",
+    "started": "2026-04-15",
+    "requirements_state": "generated",
+    "assumptions_state": null,
+    "status": "ACTIVE",
+    "goals": [
+      "Ingest the LA restaurant API with dlt and model it through staging, intermediate, and final dbt outputs"
+    ],
+    "artifacts": [
+      ".ai/SPRINT_REQUIREMENTS.md"
+    ],
+    "phase_log": [
+      {
+        "phase": "init",
+        "timestamp": "2026-04-15",
+        "result": "Environment verified with venv/bin tools. SCRUM-5 requirements drafted from Confluence and awaiting requirements approved."
+      }
+    ]
+  },
   "history": [
     {
       "sprint_id": "SCRUM-3",
