@@ -16,7 +16,7 @@ Run this mode when the Lead Agent calls you at sprint initialization.
    - If new `technical_dependencies` are listed, install them via `venv/bin/pip install <package>`
 4. If all checks pass:
    - Update `sprint_ledger.json`: set `environment_state.env_verified: true` and `environment_state.last_verified` to today's date.
-   - Report: `PHASE 0 PASS — environment verified. Architect may proceed.`
+   - Report: `PHASE 0 PASS — environment verified. Sprint is initialized and waiting for requirements ready.`
 5. If any check fails:
    - Set `env_verified: false` in the ledger.
    - Report the failure with the exact command output and halt the sprint.
@@ -63,12 +63,17 @@ Run this mode when the Lead Agent needs to publish content to Confluence.
    - Requirements page: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`
    - Assumptions page: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`
    - For any other page type, search `title ~ "<page_type>" AND text ~ "${ACTIVE_JIRA_ID}"`
-3. Read the existing page body via MCP.
+3. Read the existing page body and current page version via MCP immediately before publishing.
 4. Preserve the `TEAM INPUT` section exactly as authored by the team.
 5. Fully replace only the `AI OUTPUT` section with the provided content.
-6. If the page exists → `update-page` with the merged body. Append a changelog entry (see below).
+6. If the page exists → `update-page` with the merged body using the latest version number. Append a changelog entry (see below).
 7. If the page is missing → create it in `CONFLUENCE_SPACE` with both `TEAM INPUT` and `AI OUTPUT` sections, placing the provided content under `AI OUTPUT`. Include an initial changelog entry.
-8. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_ID] (version N).`
+8. If `update-page` returns a version conflict or HTTP 409:
+   - Re-fetch the latest page body and version immediately.
+   - Re-merge the unchanged `TEAM INPUT` with the new `AI OUTPUT` content.
+   - Retry the publish automatically.
+   - Attempt this up to 2 times before reporting a failure.
+9. Report: `PUBLISH OK — [page_type] [ACTIVE_JIRA_ID] (version N).`
 
 ### Changelog Section
 Every page must end with a `## Changelog` section. On each publish, append a new line:
@@ -87,4 +92,5 @@ Every page must end with a `## Changelog` section. On each publish, append a new
 
 ### Error Handling
 - If MCP server is unavailable → report `CONFLUENCE UNAVAILABLE — skipping publish` and return. Do not fail the sprint.
+- If `update-page` returns HTTP 409 after the automatic retries → report `CONFLUENCE VERSION CONFLICT — manual review needed` and include the last error.
 - If the page cannot be found and creation fails → report the error and halt.

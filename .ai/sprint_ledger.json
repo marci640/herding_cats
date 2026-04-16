@@ -21,7 +21,7 @@
     "name": "Sprint 05 — LA API restaurant pipeline",
     "branch": "SCRUM-5",
     "started": "2026-04-15",
-    "requirements_state": "generated",
+    "requirements_state": "approved",
     "assumptions_state": null,
     "status": "ACTIVE",
     "goals": [
@@ -35,6 +35,16 @@
         "phase": "init",
         "timestamp": "2026-04-15",
         "result": "Environment verified with venv/bin tools. SCRUM-5 requirements drafted from Confluence and awaiting requirements approved."
+      },
+      {
+        "phase": "requirements",
+        "timestamp": "2026-04-15",
+        "result": "Requirements regenerated from Confluence after requirements ready. Draft now includes the dog breed column requirement and is awaiting requirements approved."
+      },
+      {
+        "phase": "requirements-approved",
+        "timestamp": "2026-04-15",
+        "result": "Requirements approved by TPM. Locked approved draft for SCRUM-5 and ready to begin Phase 1."
       }
     ]
   },

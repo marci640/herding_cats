@@ -21,7 +21,7 @@ A **Technical PM** orchestrates a data engineering lifecycle using **GitHub Copi
 
 ### Phase 0: Init
 
-`Initialize sprint from .env` → verifies environment, fetches requirements from Confluence, drafts `SPRINT_REQUIREMENTS.md`. Halts for `requirements approved`.
+`Initialize sprint from .env` → verifies environment and initializes the sprint state safely. Requirements work begins only after the explicit `requirements ready` command.
 
 ### Phases 1–4: Build
 
@@ -33,9 +33,11 @@ Both use pages split into `TEAM INPUT` (human-owned) and `AI OUTPUT` (agent-mana
 
 **Requirements (Human-Led):** `ready` → `generated` → *(loop)* → `approved`
 - Human seeds notes on Confluence → `requirements ready` → AI structures draft → team reviews → loop or `requirements approved`.
+- Git checkpoints happen only after explicit TPM approval commands.
 
 **Assumptions (AI-Led):** `generated` → `ready` → *(loop)* → `approved`
 - Architect generates assumptions → AI publishes + opens PR → team answers in `TEAM INPUT` → `assumptions ready` → AI regenerates → loop or `assumptions approved` (requires `approved-by-tpm` label).
+- During review, Confluence and the linked PR are the source of truth; the git checkpoint happens only after approval.
 
 ### Wrap-up
 
