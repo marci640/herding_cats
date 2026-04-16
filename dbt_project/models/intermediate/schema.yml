@@ -1,15 +1,163 @@
 version: 2
 
 models:
-  - name: int_example
-    description: "Template intermediate model contract. Replace with sprint-specific intermediate models."
+  - name: int_seafood_restaurants
+    description: "Intermediate enrichment model that left-joins seafood restaurant data to the LA API restaurant feed using the proposed normalized name mapping."
     columns:
-      - name: id
-        description: "Primary key"
+      - name: restaurant_id
+        description: "Primary key from the seafood restaurant source."
         data_type: INTEGER
         tests:
           - unique
           - not_null
+      - name: restaurant_name
+        description: "Restaurant name from the seafood staging model."
+        data_type: VARCHAR
+      - name: neighborhood
+        description: "Neighborhood of the seafood restaurant."
+        data_type: VARCHAR
+      - name: specialty_dish
+        description: "Signature seafood dish."
+        data_type: VARCHAR
+      - name: outdoor_seating_for_napping
+        description: "Whether outdoor seating suitable for cat napping is available."
+        data_type: BOOLEAN
+      - name: api_location_account
+        description: "Matched API location account when a normalized name join succeeds."
+        data_type: VARCHAR
+      - name: api_dba_name
+        description: "Matched API DBA name from the LA restaurant data."
+        data_type: VARCHAR
+      - name: api_business_name
+        description: "Matched API business name from the LA restaurant data."
+        data_type: VARCHAR
+      - name: api_street_address
+        description: "Matched API street address."
+        data_type: VARCHAR
+      - name: api_city
+        description: "Matched API city value."
+        data_type: VARCHAR
+      - name: api_zip_code
+        description: "Matched API ZIP code value."
+        data_type: VARCHAR
+      - name: api_match_status
+        description: "Whether the seafood restaurant was matched to an LA API row."
+        data_type: VARCHAR
+        tests:
+          - accepted_values:
+              values: ['matched', 'unmatched']
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: int_cats
+    description: "Intermediate cat model that preserves staged cat attributes and adds the approved dog_friend relationship field."
+    columns:
+      - name: cat_id
+        description: "Primary key — unique identifier for each cat."
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: cat_name
+        description: "Name of the cat."
+        data_type: VARCHAR
+      - name: age_years
+        description: "Age of the cat in years."
+        data_type: "DECIMAL(4,1)"
+      - name: favorite_toy
+        description: "Favorite toy of the cat."
+        data_type: VARCHAR
+      - name: judgmental_level
+        description: "Judgmental score from the staging source."
+        data_type: INTEGER
+      - name: dog_friend
+        description: "Dog identifier for the cat's friendship mapping. The current approved logic should only map Sir Meows-a-Lot to Sir Barks-a-Lot."
+        data_type: BIGINT
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: int_cats_dogs
+    description: "Intermediate joined cat-dog model linking cats to their dog friends and carrying the derived breed field downstream."
+    columns:
+      - name: cat_id
+        description: "Primary key — one row per cat after the cat-dog join."
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: cat_name
+        description: "Name of the cat."
+        data_type: VARCHAR
+      - name: dog_id
+        description: "Joined dog identifier from the dog friendship mapping."
+        data_type: BIGINT
+      - name: dog_name
+        description: "Name of the joined dog."
+        data_type: VARCHAR
+      - name: dog_breed
+        description: "Breed value carried from the staged dogs data."
+        data_type: VARCHAR
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: cat_review_profile
+    description: "Final sprint output model combining cat, dog, restaurant, and review information into a single review-centric profile."
+    columns:
+      - name: review_id
+        description: "Primary key — one row per review in the final profile."
+        data_type: INTEGER
+        tests:
+          - unique
+          - not_null
+      - name: cat_id
+        description: "Foreign key to the cat profile."
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: cat_name
+        description: "Name of the cat reviewer."
+        data_type: VARCHAR
+      - name: dog_friend
+        description: "Dog friend identifier associated with the cat when present."
+        data_type: BIGINT
+      - name: dog_name
+        description: "Name of the joined dog friend when present."
+        data_type: VARCHAR
+      - name: dog_breed
+        description: "Breed of the joined dog friend."
+        data_type: VARCHAR
+      - name: restaurant_id
+        description: "Foreign key to the restaurant profile."
+        data_type: INTEGER
+        tests:
+          - not_null
+      - name: restaurant_name
+        description: "Name of the restaurant associated with the review."
+        data_type: VARCHAR
+      - name: api_location_account
+        description: "LA API location identifier carried through the restaurant enrichment join."
+        data_type: VARCHAR
+      - name: review_score
+        description: "Review score carried from the seed review data when available."
+        data_type: INTEGER
+      - name: paws_rating
+        description: "Paw-based rating text from the reviews source."
+        data_type: VARCHAR
+      - name: hiss_count
+        description: "Hiss count observed during the dining experience."
+        data_type: INTEGER
+      - name: review_text
+        description: "Text body of the cat review."
+        data_type: VARCHAR
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP

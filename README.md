@@ -29,7 +29,7 @@ A **Technical PM** orchestrates a data engineering lifecycle using **GitHub Copi
 
 ### Two Confluence Workflows
 
-Both use pages split into `TEAM INPUT` (human-owned) and `AI OUTPUT` (agent-managed, fully replaced on each pass). Every publish appends a `## Changelog` entry.
+Both use pages split into `TEAM INPUT` (human-owned) and `AI OUTPUT` (agent-managed, fully replaced on each pass). Each sprint uses a Confluence parent page named by `ACTIVE_JIRA_ID`, with `requirements` and `assumptions` under it. Every publish appends a `## Changelog` entry.
 
 **Requirements (Human-Led):** `ready` → `generated` → *(loop)* → `approved`
 - Human seeds notes on Confluence → `requirements ready` → AI structures draft → team reviews → loop or `requirements approved`.

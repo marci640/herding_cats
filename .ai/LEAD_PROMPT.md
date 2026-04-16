@@ -15,23 +15,18 @@ Precedence order for task execution and history retrieval:
 4. Never use `*_summary.md` files for technical logic or code generation.
 
 ## Confluence Collaboration Protocol
-Treat Confluence as a collaborative IDE with two managed sections:
-- `TEAM INPUT` is human-owned source material. Read it as authoritative and never overwrite it.
-- `AI OUTPUT` is AI-managed working text. On each `generated` pass, overwrite this section completely to keep it clean and current.
-- If a Confluence publish hits a version conflict, re-fetch the latest page state, preserve `TEAM INPUT`, and retry the publish automatically before surfacing an error.
-
-State handling rules:
-- When a human marks the page `ready`, treat the entire current page state as the baseline truth for the next generation pass.
-- If `TEAM INPUT` conflicts with older `AI OUTPUT`, prioritize the human edit.
-- During iterative `ready` → `generated` passes, preserve keyword anchors from `TEAM INPUT` by carrying them into generated text as `HUMAN: [anchor_key]` pointers followed by the verbatim anchored content.
-- On the final `approved` pass, remove transient `HUMAN:` pointers while preserving the anchored text itself.
+Use Confluence as the HITL workspace.
+- `TEAM INPUT` is human-owned and authoritative. Never overwrite it.
+- `AI OUTPUT` is AI-managed. Replace it completely on each `generated` pass.
+- On `ready`, treat the current page as the new baseline; if human edits conflict with older AI text, the human edit wins.
+- Temporary `HUMAN:` pointers may be used during review loops to preserve anchors, but remove them on the final `approved` sync.
+- If publish hits a version conflict, re-fetch the page, preserve `TEAM INPUT`, and retry automatically.
 
 Confluence discovery rules:
-- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env` before any Confluence lookup.
-- Search Confluence in the `CONFLUENCE_SPACE` space.
-- Requirements page lookup: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`.
-- Assumptions page lookup: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`.
-- Do not depend on a sprint-folder path as the primary lookup mechanism.
+- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env` before any lookup.
+- Use only a confirmed sprint container whose title contains `ACTIVE_JIRA_ID`; prefer a real folder over a same-titled stub page.
+- Never write outside the confirmed sprint container.
+- Missing `requirements` page → halt and report. Missing `assumptions` page → create it under the confirmed sprint container.
 
 # OPERATING PROTOCOL
 1. **Initialize:** Read `CLAUDE.md` for project guardrails (includes venv rules, naming conventions, testing standards).
@@ -93,7 +88,7 @@ Flow: `ready` → `generated` → *(loop)* → `approved`
 This workflow runs **only** on an explicit `requirements ready` signal (including the first pass and any mid-sprint revisions).
 
 **On `requirements ready`:**
-1. Fetch the `requirements` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
+1. Fetch the `requirements` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
 2. Read `TEAM INPUT` as the authoritative business intent.
 3. Generate/update `SPRINT_REQUIREMENTS.md` from the Confluence content, mapping `TEAM INPUT` into the structured template sections (`Business Rules`, `Transformation Logic`, `New Models / Sources`, `Execution Prerequisites`, `Acceptance Criteria`).
 4. Preserve AI-generated clarifications or structure that do **not** conflict with the Confluence content. If Confluence includes keyword anchors in `TEAM INPUT`, carry anchored text verbatim.
@@ -123,7 +118,7 @@ This workflow runs at Phase 1.5, triggered automatically after the Architect pro
 5. Set `active_sprint.assumptions_state` → `generated`. Halt and notify TPM without committing the draft assumptions.
 
 **On `assumptions ready`:**
-1. Fetch the `assumptions` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
+1. Fetch the `assumptions` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
 2. Read team answers/edits from `TEAM INPUT` and any direct edits to `AI OUTPUT`.
 3. Regenerate `ACTIVE_ASSUMPTIONS.md`, incorporating answers and resolving questions. Carry forward previously resolved assumptions.
 4. Route changes back to Archie for `schema.yml` patch if assumption values changed.

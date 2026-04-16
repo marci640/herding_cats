@@ -19,11 +19,11 @@ Phases: **0 (Init) → 1 (Architect) → 1.5 (Assumptions) → 2 (Transformer) �
 - For in-progress assumptions, Confluence and the linked PR are the review source of truth until approval.
 
 ### Confluence Model
-- Pages split into `TEAM INPUT` (human-owned, never overwritten) and `AI OUTPUT` (fully replaced on each `generated` pass).
-- Discovery: search `CONFLUENCE_SPACE` (from `.env`) by page type + `ACTIVE_JIRA_ID`.
-- Every publish appends a `## Changelog` entry via `update-page`.
-- Confluence version conflicts should trigger an automatic re-fetch and retry before surfacing an error.
-- Publishing is non-blocking — if MCP is unavailable, the sprint continues.
+- Pages use `TEAM INPUT` (human-owned, never overwritten) and `AI OUTPUT` (AI-managed, fully replaced on each `generated` pass).
+- Use only a confirmed sprint container whose title contains `ACTIVE_JIRA_ID`; prefer the real folder over any same-titled stub page.
+- The human creates `requirements` first. The agent may create `assumptions` first as a live doc under that confirmed sprint container.
+- Every publish appends a `## Changelog` row in `PST` and auto-retries on version conflicts.
+- If MCP is unavailable, halt and report. Do not continue the HITL publish step silently.
 
 ### Key Contracts
 - `schema.yml` + approved assumptions = implementation contract.

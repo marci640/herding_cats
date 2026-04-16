@@ -22,13 +22,17 @@
     "branch": "SCRUM-5",
     "started": "2026-04-15",
     "requirements_state": "approved",
-    "assumptions_state": null,
-    "status": "ACTIVE",
+    "assumptions_state": "generated",
+    "status": "HITL_PENDING",
     "goals": [
       "Ingest the LA restaurant API with dlt and model it through staging, intermediate, and final dbt outputs"
     ],
     "artifacts": [
-      ".ai/SPRINT_REQUIREMENTS.md"
+      ".ai/SPRINT_REQUIREMENTS.md",
+      ".ai/ACTIVE_ASSUMPTIONS.md",
+      "dbt_project/models/staging/schema.yml",
+      "dbt_project/models/staging/sources.yml",
+      "dbt_project/models/intermediate/schema.yml"
     ],
     "phase_log": [
       {
@@ -45,6 +49,11 @@
         "phase": "requirements-approved",
         "timestamp": "2026-04-15",
         "result": "Requirements approved by TPM. Locked approved draft for SCRUM-5 and ready to begin Phase 1."
+      },
+      {
+        "phase": "architect",
+        "timestamp": "2026-04-15",
+        "result": "Generated staging and intermediate schema contracts plus ACTIVE_ASSUMPTIONS.md for SCRUM-5. Awaiting assumptions approval before implementation."
       }
     ]
   },
