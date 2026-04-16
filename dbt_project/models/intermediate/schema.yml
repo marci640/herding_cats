@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_seafood_restaurants
-    description: "Intermediate enrichment model that left-joins seafood restaurant data to the LA API restaurant feed using the proposed normalized name mapping."
+    description: "Intermediate enrichment model that left-joins seafood restaurant data to the LA API restaurant feed using the current normalized DBA-name mapping."
     columns:
       - name: restaurant_id
         description: "Primary key from the seafood restaurant source."

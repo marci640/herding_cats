@@ -22,8 +22,8 @@
     "branch": "SCRUM-5",
     "started": "2026-04-15",
     "requirements_state": "approved",
-    "assumptions_state": "generated",
-    "status": "HITL_PENDING",
+    "assumptions_state": "approved",
+    "status": "IN_PROGRESS",
     "goals": [
       "Ingest the LA restaurant API with dlt and model it through staging, intermediate, and final dbt outputs"
     ],
@@ -54,6 +54,16 @@
         "phase": "architect",
         "timestamp": "2026-04-15",
         "result": "Generated staging and intermediate schema contracts plus ACTIVE_ASSUMPTIONS.md for SCRUM-5. Awaiting assumptions approval before implementation."
+      },
+      {
+        "phase": "assumptions",
+        "timestamp": "2026-04-16",
+        "result": "Assumptions regenerated from Confluence after assumptions ready. A1 and A2 were approved, and A3 was revised to use a unique DBA-name grain for LA API staging. Awaiting assumptions approved."
+      },
+      {
+        "phase": "assumptions-approved",
+        "timestamp": "2026-04-16",
+        "result": "TPM approved the SCRUM-5 assumptions set. The DBA-name grain decision is now locked and Phase 2 implementation may begin."
       }
     ]
   },

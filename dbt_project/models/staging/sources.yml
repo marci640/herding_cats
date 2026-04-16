@@ -15,7 +15,7 @@ sources:
           - name: business_name
             description: Registered business name from the LA API.
           - name: dba_name
-            description: Doing-business-as restaurant name used for the proposed name-based enrichment match.
+            description: Doing-business-as restaurant name used for the name-based enrichment match and downstream deduplication grain.
           - name: street_address
             description: Street address of the business location.
           - name: city

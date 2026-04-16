@@ -133,7 +133,7 @@ models:
   # Schema confirmed by direct S3 inspection.
   # -----------------------------------------------------------------
   - name: stg_dogs
-    description: "Staging model for dogs.csv from S3 bucket cat-photos-2026. Read directly via DuckDB httpfs extension and enriched with a derived breed value per the current assumptions draft."
+    description: "Staging model for dogs.csv from S3 bucket cat-photos-2026. Read directly via DuckDB httpfs extension and enriched with a derived breed value per the latest assumptions review."
     config:
       materialized: table
     columns:
@@ -158,7 +158,7 @@ models:
         description: "How judgmental the dog is (integer scale)"
         data_type: BIGINT
       - name: breed
-        description: "Derived breed value for downstream joins. Current proposed default is beagle until an upstream breed field is provided."
+        description: "Derived breed value for downstream joins. Current draft default is beagle until an upstream breed field is provided."
         data_type: VARCHAR
         tests:
           - not_null
@@ -169,22 +169,21 @@ models:
           - not_null
 
   - name: stg_la_restaurants
-    description: "Staging model for the Los Angeles public restaurant API ingested through dlt into the raw schema. Preserves the source business and location attributes for downstream enrichment."
+    description: "Staging model for the Los Angeles public restaurant API ingested through dlt into the raw schema. Deduplicates the feed to a unique DBA-name grain for downstream restaurant enrichment."
     config:
       materialized: table
     columns:
       - name: location_account
-        description: "Primary key — business location identifier from the LA City API."
+        description: "Business location identifier from the LA City API, retained as a source attribute after DBA-name deduplication."
         data_type: VARCHAR
-        tests:
-          - unique
-          - not_null
       - name: business_name
         description: "Registered business name from the API."
         data_type: VARCHAR
       - name: dba_name
-        description: "Doing-business-as restaurant name from the API when present."
+        description: "Doing-business-as restaurant name from the API. This is the preferred business-facing name for deduplication and matching."
         data_type: VARCHAR
+        tests:
+          - not_null
       - name: street_address
         description: "Street address of the restaurant location."
         data_type: VARCHAR
@@ -222,9 +221,10 @@ models:
         description: "Raw location payload from the API, preserved for downstream reference."
         data_type: VARCHAR
       - name: normalized_restaurant_name
-        description: "Upper-trim normalized restaurant name used for the proposed enrichment join to seafood restaurants."
+        description: "Primary key — upper-trim normalized DBA name used as the deduplicated grain for enrichment joins. Duplicate restaurant names are excluded by design."
         data_type: VARCHAR
         tests:
+          - unique
           - not_null
       - name: processed_at
         description: "Runtime processing timestamp"
