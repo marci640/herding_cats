@@ -5,6 +5,7 @@ Flow: dlt ingest (raw schema) -> dbt seed -> Cosmos dbt transform (run + test)
 """
 
 import logging
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -31,7 +32,7 @@ AIRFLOW_HOME = Path(__file__).resolve().parent.parent
 load_dotenv(AIRFLOW_HOME / ".env")  # Load S3/MSSQL creds for dbt + dlt tasks
 
 DBT_PROJECT_PATH = AIRFLOW_HOME / "dbt_project"
-DB_PATH = AIRFLOW_HOME / "dbt_project" / "warehouse.duckdb"
+DB_PATH = Path(os.getenv("DBT_DUCKDB_PATH", str(AIRFLOW_HOME / "warehouse.duckdb")))
 DBT_BIN = str(AIRFLOW_HOME / "venv" / "bin" / "dbt")
 
 DEFAULT_ARGS = {

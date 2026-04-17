@@ -45,7 +45,8 @@ models:
         data_type: VARCHAR
         tests:
           - accepted_values:
-              values: ['matched', 'unmatched']
+              arguments:
+                values: ['matched', 'unmatched']
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP

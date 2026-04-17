@@ -38,8 +38,8 @@ sources:
             description: NAICS code for the business.
           - name: primary_naics_description
             description: Primary NAICS description returned by the API.
-          - name: location_1
-            description: Raw nested location payload from the API.
+          - name: location_1__type
+            description: Flattened location payload type from the API produced by dlt.
   - name: sql_server
     description: >
       MSSQL database attached via on-run-start hooks in dbt_project.yml.
