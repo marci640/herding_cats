@@ -133,7 +133,7 @@ models:
   # Schema confirmed by direct S3 inspection.
   # -----------------------------------------------------------------
   - name: stg_dogs
-    description: "Staging model for dogs.csv from S3 bucket cat-photos-2026. Read directly via DuckDB httpfs extension."
+    description: "Staging model for dogs.csv from S3 bucket cat-photos-2026. Read directly via DuckDB httpfs extension and enriched with a derived breed value per the latest assumptions review."
     config:
       materialized: table
     columns:
@@ -157,6 +157,75 @@ models:
       - name: judgmental_level
         description: "How judgmental the dog is (integer scale)"
         data_type: BIGINT
+      - name: breed
+        description: "Derived breed value for downstream joins. Current draft default is beagle until an upstream breed field is provided."
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: processed_at
+        description: "Runtime processing timestamp"
+        data_type: TIMESTAMP
+        tests:
+          - not_null
+
+  - name: stg_la_restaurants
+    description: "Staging model for the Los Angeles public restaurant API ingested through dlt into the raw schema. Deduplicates the feed to a unique DBA-name grain for downstream restaurant enrichment."
+    config:
+      materialized: table
+    columns:
+      - name: location_account
+        description: "Business location identifier from the LA City API, retained as a source attribute after DBA-name deduplication."
+        data_type: VARCHAR
+      - name: business_name
+        description: "Registered business name from the API."
+        data_type: VARCHAR
+      - name: dba_name
+        description: "Doing-business-as restaurant name from the API. This is the preferred business-facing name for deduplication and matching."
+        data_type: VARCHAR
+        tests:
+          - not_null
+      - name: street_address
+        description: "Street address of the restaurant location."
+        data_type: VARCHAR
+      - name: city
+        description: "City for the restaurant location."
+        data_type: VARCHAR
+      - name: zip_code
+        description: "ZIP code for the restaurant location."
+        data_type: VARCHAR
+      - name: location_description
+        description: "Full location description string from the API."
+        data_type: VARCHAR
+      - name: location_start_date
+        description: "Start date for the business location when provided by the API."
+        data_type: DATE
+      - name: mailing_address
+        description: "Mailing address from the API."
+        data_type: VARCHAR
+      - name: mailing_city
+        description: "Mailing city from the API."
+        data_type: VARCHAR
+      - name: mailing_zip_code
+        description: "Mailing ZIP code from the API."
+        data_type: VARCHAR
+      - name: council_district
+        description: "Council district associated with the restaurant location."
+        data_type: VARCHAR
+      - name: naics
+        description: "NAICS classification code from the API."
+        data_type: VARCHAR
+      - name: primary_naics_description
+        description: "Primary NAICS description from the API."
+        data_type: VARCHAR
+      - name: location_1
+        description: "Raw location payload from the API, preserved for downstream reference."
+        data_type: VARCHAR
+      - name: normalized_restaurant_name
+        description: "Primary key — upper-trim normalized DBA name used as the deduplicated grain for enrichment joins. Duplicate restaurant names are excluded by design."
+        data_type: VARCHAR
+        tests:
+          - unique
+          - not_null
       - name: processed_at
         description: "Runtime processing timestamp"
         data_type: TIMESTAMP

@@ -1,8 +1,8 @@
 {
   "project_metadata": {
     "project": "herding_cats",
-    "current_version": "0.1.1",
-    "last_updated": "2026-03-31"
+    "current_version": "0.1.2",
+    "last_updated": "2026-04-16"
   },
   "environment_state": {
     "python_version": "3.11",
@@ -14,10 +14,89 @@
     ],
     "database": "duckdb",
     "env_verified": true,
-    "last_verified": "2026-03-30"
+    "last_verified": "2026-04-15"
   },
   "active_sprint": null,
   "history": [
+    {
+      "sprint_id": "SCRUM-5",
+      "name": "Sprint 05 — LA API restaurant pipeline",
+      "branch": "SCRUM-5",
+      "started": "2026-04-15",
+      "status": "COMPLETE",
+      "goals": [
+        "Ingest the LA restaurant API with dlt and model it through staging, intermediate, and final dbt outputs"
+      ],
+      "artifacts": [
+        ".ai/SPRINT_REQUIREMENTS.md",
+        ".ai/ACTIVE_ASSUMPTIONS.md",
+        "dbt_project/models/staging/schema.yml",
+        "dbt_project/models/staging/sources.yml",
+        "dbt_project/models/intermediate/schema.yml",
+        "dbt_project/models/staging/stg_la_restaurants.sql",
+        "dbt_project/models/staging/stg_dogs.sql",
+        "dbt_project/models/intermediate/int_seafood_restaurants.sql",
+        "dbt_project/models/intermediate/int_cats.sql",
+        "dbt_project/models/intermediate/int_cats_dogs.sql",
+        "dbt_project/models/intermediate/cat_review_profile.sql",
+        "include/dlt_sources/api_source.py",
+        "dags/dbt_pipeline_dag.py",
+        "docs/archive/scrum-5/requirements.md",
+        "docs/archive/scrum-5/summary.md"
+      ],
+      "phase_log": [
+        {
+          "phase": "init",
+          "timestamp": "2026-04-15",
+          "result": "Environment verified with venv/bin tools. SCRUM-5 requirements drafted from Confluence and awaiting requirements approved."
+        },
+        {
+          "phase": "requirements",
+          "timestamp": "2026-04-15",
+          "result": "Requirements regenerated from Confluence after requirements ready. Draft now includes the dog breed column requirement and is awaiting requirements approved."
+        },
+        {
+          "phase": "requirements-approved",
+          "timestamp": "2026-04-15",
+          "result": "Requirements approved by TPM. Locked approved draft for SCRUM-5 and ready to begin Phase 1."
+        },
+        {
+          "phase": "architect",
+          "timestamp": "2026-04-15",
+          "result": "Generated staging and intermediate schema contracts plus ACTIVE_ASSUMPTIONS.md for SCRUM-5. Awaiting assumptions approval before implementation."
+        },
+        {
+          "phase": "assumptions",
+          "timestamp": "2026-04-16",
+          "result": "Assumptions regenerated from Confluence after assumptions ready. A1 and A2 were approved, and A3 was revised to use a unique DBA-name grain for LA API staging. Awaiting assumptions approved."
+        },
+        {
+          "phase": "assumptions-approved",
+          "timestamp": "2026-04-16",
+          "result": "TPM approved the SCRUM-5 assumptions set. The DBA-name grain decision is now locked and Phase 2 implementation may begin."
+        },
+        {
+          "phase": "transformer",
+          "timestamp": "2026-04-16",
+          "result": "Implemented the LA API dlt loader, the new staging model stg_la_restaurants, and the downstream int_seafood_restaurants, int_cats, int_cats_dogs, and cat_review_profile SQL models."
+        },
+        {
+          "phase": "auditor",
+          "timestamp": "2026-04-16",
+          "result": "Loaded the LA API into DuckDB and verified the sprint model chain with dbt build. PASS 40/40, 0 errors, 0 warnings."
+        },
+        {
+          "phase": "devops",
+          "timestamp": "2026-04-16",
+          "result": "Aligned the DAG and dbt to the same absolute DuckDB path and verified dags/dbt_pipeline_dag.py parses successfully."
+        },
+        {
+          "phase": "wrap-up",
+          "timestamp": "2026-04-16",
+          "result": "Archived SCRUM-5 requirements and summary, reset the active workspace template, and closed the sprint."
+        }
+      ]
+    },
     {
       "sprint_id": "SCRUM-3",
       "name": "Sprint 01 \u2014 Staging Data",

@@ -1,21 +1,43 @@
-"""
-dlt source: Example API ingestion.
-Replace the URL and parsing logic with your real source.
-Each @dlt.resource becomes a table in the destination.
-Group related resources under the @dlt.source for schema management.
-"""
+"""dlt source for the Los Angeles restaurant dataset."""
+
+import os
+from pathlib import Path
 
 import dlt
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
+
+BASE_URL = "https://data.lacity.org/resource/9hvm-fgmm.json"
+PAGE_SIZE = 1000
 
 
 @dlt.resource(table_name="raw_api_data", write_disposition="replace")
 def get_api_data():
-    """Fetch data from an external API and yield rows for dlt to load."""
-    url = "https://api.example.com/data"
-    response = requests.get(url)
-    response.raise_for_status()
-    yield response.json()
+    """Fetch the full LA restaurant dataset and yield one row at a time."""
+    offset = 0
+
+    while True:
+        response = requests.get(
+            BASE_URL,
+            params={"$limit": PAGE_SIZE, "$offset": offset},
+            timeout=30,
+        )
+        response.raise_for_status()
+        rows = response.json()
+
+        if not rows:
+            break
+
+        for row in rows:
+            yield row
+
+        if len(rows) < PAGE_SIZE:
+            break
+
+        offset += PAGE_SIZE
 
 
 # ---------------------------------------------------------------------------
@@ -34,9 +56,10 @@ def api_source():
 
 if __name__ == "__main__":
     """Standalone run for local testing outside Airflow."""
+    db_path = os.getenv("DBT_DUCKDB_PATH")
     pipeline = dlt.pipeline(
         pipeline_name="api_to_duckdb",
-        destination="duckdb",
+        destination=dlt.destinations.duckdb(db_path),
         dataset_name="raw",
     )
     load_info = pipeline.run(api_source())

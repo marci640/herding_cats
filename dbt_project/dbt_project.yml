@@ -7,7 +7,7 @@ profile: herding_cats
 on-run-start:
   - "INSTALL mssql FROM community;"
   - "LOAD mssql;"
-  - "ATTACH 'mssql://{{ env_var('MSSQL_USER') }}:{{ env_var('MSSQL_PASSWORD') }}@127.0.0.1:1433?database={{ env_var('MSSQL_DATABASE') }}' AS sql_server (TYPE MSSQL);"
+  - "ATTACH 'Server=127.0.0.1,1433;Database={{ env_var('MSSQL_DATABASE') }};User Id={{ env_var('MSSQL_USER') }};Password={{ env_var('MSSQL_PASSWORD') }}' AS sql_server (TYPE MSSQL);"
 
 
 model-paths: ["models"]

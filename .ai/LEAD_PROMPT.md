@@ -15,22 +15,18 @@ Precedence order for task execution and history retrieval:
 4. Never use `*_summary.md` files for technical logic or code generation.
 
 ## Confluence Collaboration Protocol
-Treat Confluence as a collaborative IDE with two managed sections:
-- `TEAM INPUT` is human-owned source material. Read it as authoritative and never overwrite it.
-- `AI OUTPUT` is AI-managed working text. On each `generated` pass, overwrite this section completely to keep it clean and current.
-
-State handling rules:
-- When a human marks the page `ready`, treat the entire current page state as the baseline truth for the next generation pass.
-- If `TEAM INPUT` conflicts with older `AI OUTPUT`, prioritize the human edit.
-- During iterative `ready` → `generated` passes, preserve keyword anchors from `TEAM INPUT` by carrying them into generated text as `HUMAN: [anchor_key]` pointers followed by the verbatim anchored content.
-- On the final `approved` pass, remove transient `HUMAN:` pointers while preserving the anchored text itself.
+Use Confluence as the HITL workspace.
+- `TEAM INPUT` is human-owned and authoritative. Never overwrite it.
+- `AI OUTPUT` is AI-managed. Replace it completely on each `generated` pass.
+- On `ready`, treat the current page as the new baseline; if human edits conflict with older AI text, the human edit wins.
+- Temporary `HUMAN:` pointers may be used during review loops to preserve anchors, but remove them on the final `approved` sync.
+- If publish hits a version conflict, re-fetch the page, preserve `TEAM INPUT`, and retry automatically.
 
 Confluence discovery rules:
-- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env` before any Confluence lookup.
-- Search Confluence in the `CONFLUENCE_SPACE` space.
-- Requirements page lookup: `title ~ "requirements" AND text ~ "${ACTIVE_JIRA_ID}"`.
-- Assumptions page lookup: `title ~ "assumptions" AND text ~ "${ACTIVE_JIRA_ID}"`.
-- Do not depend on a sprint-folder path as the primary lookup mechanism.
+- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env` before any lookup.
+- Use only a confirmed sprint container whose title contains `ACTIVE_JIRA_ID`; prefer a real folder over a same-titled stub page.
+- Never write outside the confirmed sprint container.
+- Missing `requirements` page → halt and report. Missing `assumptions` page → create it under the confirmed sprint container.
 
 # OPERATING PROTOCOL
 1. **Initialize:** Read `CLAUDE.md` for project guardrails (includes venv rules, naming conventions, testing standards).
@@ -39,11 +35,12 @@ Confluence discovery rules:
 4. **State Management:** `/.ai/sprint_ledger.json` is the single source of truth.
 
 ## 🔄 Git Sync Protocol
-Commit + push ONLY at these checkpoints (no commits during Phases 2–4):
-1. **Sprint start:** `SPRINT_REQUIREMENTS.md` + initial ledger setup.
-2. **Requirements approved:** Locked `SPRINT_REQUIREMENTS.md` after `requirements approved`.
-3. **Assumptions generated:** Phase 1 artifacts (`schema.yml`, `ACTIVE_ASSUMPTIONS.md`, ledger state).
-4. **Post-wrap-up:** Ledger → `history`, archive outputs, workspace reset.
+No git commit or push is allowed unless the TPM explicitly signals the checkpoint or directly asks for it.
+
+Allowed checkpoints after explicit TPM approval:
+1. **Requirements approved:** Locked `SPRINT_REQUIREMENTS.md` + ledger update.
+2. **Assumptions approved:** Approved Phase 1 artifacts (`schema.yml`, `ACTIVE_ASSUMPTIONS.md`, ledger state).
+3. **Post-wrap-up:** Ledger → `history`, archive outputs, workspace reset.
 
 Pattern: `git add -A && git commit -m "message" && git push`
 
@@ -63,11 +60,12 @@ Pattern: `git add -A && git commit -m "message" && git push`
    }
    ```
    `sprint_id` is always `ACTIVE_JIRA_ID` from `.env` — this is also the branch name.
-3. Trigger Phase 0 (env verification + requirements draft). Halt and wait for `requirements approved` before Phase 1.
+3. Trigger Phase 0 environment verification only. Do **not** fetch Confluence requirements, draft `SPRINT_REQUIREMENTS.md`, publish `AI OUTPUT`, or commit requirement content during init.
+4. Halt and wait for the explicit TPM command `requirements ready` before running the Requirements Workflow.
 
 ## ⛓️ Execution Sequencing & Gates
 
-1. **Phase 0 (Init):** Execute Mode 1 of `04_devops.md` → set `env_verified: true`. Then run the [Requirements Workflow](#-requirements-workflow-human-led) to draft `SPRINT_REQUIREMENTS.md` from Confluence. Halt after first `generated` pass and wait for `requirements approved`.
+1. **Phase 0 (Init):** Execute Mode 1 of `04_devops.md` → set `env_verified: true` and initialize the sprint safely. Halt after verification and wait for the explicit TPM signal `requirements ready`.
 2. **Phase 1 (Architect):** Archie reads approved `SPRINT_REQUIREMENTS.md` → generates `schema.yml`. MUST generate `ACTIVE_ASSUMPTIONS.md` if logic is ambiguous.
 3. **Phase 1.5 (Assumptions Workflow):** See [Assumptions Workflow](#-assumptions-workflow-ai-led) below. Only proceed to Phase 2 when TPM says `assumptions approved`.
 4. **Phase 2 (Transformer):** Bea writes SQL from `schema.yml` only (FORBIDDEN from reading requirements).
@@ -75,7 +73,7 @@ Pattern: `git add -A && git commit -m "message" && git push`
 6. **Phase 4 (DevOps):** Execute Mode 2 of `04_devops.md` — validate Airflow DAG.
 
 **Exit criteria per phase:**
-- Phase 0: `env_verified: true` AND `SPRINT_REQUIREMENTS.md` drafted, TPM says `requirements approved`
+- Phase 0: `env_verified: true` and sprint initialized safely; requirements drafting begins only after explicit `requirements ready`, and Phase 1 still requires `requirements approved`
 - Phase 1: `schema.yml` with columns, types, tests, descriptions
 - Phase 1.5: Assumptions approved on Confluence, `approved-by-tpm` label on PR
 - Phase 2: SQL files with column names matching `schema.yml` exactly
@@ -87,23 +85,25 @@ Pattern: `git add -A && git commit -m "message" && git push`
 ### 🔄 Requirements Workflow (Human-Led)
 Flow: `ready` → `generated` → *(loop)* → `approved`
 
-This workflow runs during Phase 0 init and on any subsequent `requirements ready` signal (including mid-sprint revisions).
+This workflow runs **only** on an explicit `requirements ready` signal (including the first pass and any mid-sprint revisions).
 
 **On `requirements ready`:**
-1. Fetch the `requirements` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
+1. Fetch the `requirements` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
 2. Read `TEAM INPUT` as the authoritative business intent.
 3. Generate/update `SPRINT_REQUIREMENTS.md` from the Confluence content, mapping `TEAM INPUT` into the structured template sections (`Business Rules`, `Transformation Logic`, `New Models / Sources`, `Execution Prerequisites`, `Acceptance Criteria`).
 4. Preserve AI-generated clarifications or structure that do **not** conflict with the Confluence content. If Confluence includes keyword anchors in `TEAM INPUT`, carry anchored text verbatim.
 5. Update the `Confluence Source:` header with the version link.
 6. Publish the structured draft back to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `requirements`). Mode 3 appends a `` `generated {timestamp}` `` entry to the page's Changelog.
 7. Set `active_sprint.requirements_state` → `generated`. Notify TPM.
+8. Leave the draft uncommitted until the TPM explicitly says `requirements approved` or directly asks for a git checkpoint.
 
 **On subsequent `requirements ready`:** Repeat steps 1–7 (same command handles both first pass and revisions).
 
 **On `requirements approved`:**
 1. Treat current `SPRINT_REQUIREMENTS.md` as locked.
 2. Set `active_sprint.requirements_state` → `approved`.
-3. Proceed to Phase 1 (Architect).
+3. Commit and push the locked `SPRINT_REQUIREMENTS.md` and ledger update because this is the explicit TPM approval checkpoint.
+4. Proceed to Phase 1 (Architect).
 
 ### 🔄 Assumptions Workflow (AI-Led)
 Flow: `generated` → `ready` → *(loop)* → `approved`
@@ -114,23 +114,26 @@ This workflow runs at Phase 1.5, triggered automatically after the Architect pro
 1. **Format check:** Every assumption needs `Ambiguity/Gap`, `Decision`, `Rationale`, `Implementation Impact`, `TPM Action`.
 2. Publish `ACTIVE_ASSUMPTIONS.md` to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `assumptions`).
 3. **PR:** Check `gh pr view --json url`. If missing, create with `gh pr create --fill --assignee "@me" --reviewer "marci640"`. PR body links to the Confluence assumptions page.
-4. Set `active_sprint.assumptions_state` → `generated`. Halt and notify TPM.
+4. Treat Confluence plus the linked PR as the review source of truth while assumptions are still in `generated` or `ready` state.
+5. Set `active_sprint.assumptions_state` → `generated`. Halt and notify TPM without committing the draft assumptions.
 
 **On `assumptions ready`:**
-1. Fetch the `assumptions` page from Confluence via `ACTIVE_JIRA_ID` discovery rules.
+1. Fetch the `assumptions` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
 2. Read team answers/edits from `TEAM INPUT` and any direct edits to `AI OUTPUT`.
 3. Regenerate `ACTIVE_ASSUMPTIONS.md`, incorporating answers and resolving questions. Carry forward previously resolved assumptions.
 4. Route changes back to Archie for `schema.yml` patch if assumption values changed.
 5. Republish to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `assumptions`).
 6. Update PR: `gh pr comment <N> --body "Assumptions regenerated. Review at [Confluence link]."` and `gh pr edit <N> --add-reviewer "marci640"`.
-7. Set `active_sprint.assumptions_state` → `generated`. Notify TPM.
+7. Keep the updated assumptions uncommitted while review is in progress.
+8. Set `active_sprint.assumptions_state` → `generated`. Notify TPM.
 
 **On `assumptions approved`:**
 1. Verify `approved-by-tpm` label on PR. If missing, halt.
 2. Fetch final state from Confluence. Sync local `ACTIVE_ASSUMPTIONS.md`.
 3. Remove transient `HUMAN:` pointers while preserving anchored text.
 4. Set `active_sprint.assumptions_state` → `approved`.
-5. Proceed to Phase 2 (Transformer).
+5. Commit and push the approved assumptions artifacts and ledger update because this is the explicit TPM approval checkpoint.
+6. Proceed to Phase 2 (Transformer).
 
 # DEFINITION OF DONE
 - [ ] dbt models include `processed_at` timestamp.

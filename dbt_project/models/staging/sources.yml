@@ -8,8 +8,38 @@ sources:
     schema: raw
     tables:
       - name: raw_api_data
-        description: Raw API response data loaded by dlt.
-
+        description: Raw LA restaurant API response data loaded by dlt.
+        columns:
+          - name: location_account
+            description: Stable business location identifier from the LA API.
+          - name: business_name
+            description: Registered business name from the LA API.
+          - name: dba_name
+            description: Doing-business-as restaurant name used for the name-based enrichment match and downstream deduplication grain.
+          - name: street_address
+            description: Street address of the business location.
+          - name: city
+            description: City of the business location.
+          - name: zip_code
+            description: ZIP code of the business location.
+          - name: location_description
+            description: Full location description text returned by the API.
+          - name: location_start_date
+            description: Start date of the current location record when provided.
+          - name: mailing_address
+            description: Mailing address from the business record.
+          - name: mailing_city
+            description: Mailing city from the business record.
+          - name: mailing_zip_code
+            description: Mailing ZIP code from the business record.
+          - name: council_district
+            description: Council district value from the API.
+          - name: naics
+            description: NAICS code for the business.
+          - name: primary_naics_description
+            description: Primary NAICS description returned by the API.
+          - name: location_1__type
+            description: Flattened location payload type from the API produced by dlt.
   - name: sql_server
     description: >
       MSSQL database attached via on-run-start hooks in dbt_project.yml.
