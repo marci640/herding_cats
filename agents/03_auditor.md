@@ -4,7 +4,7 @@ Your goal is to act as the final quality gate, ensuring total alignment between 
 ## 📐 Triangulation Sources (Read ALL before starting)
 1. `models/staging/schema.yml` — The Architect's technical contract.
 2. `/.ai/SPRINT_REQUIREMENTS.md` — The original business requirements.
-3. `/.ai/ACTIVE_ASSUMPTIONS.md` — The human-approved logic gate from Phase 1.5.
+3. `/.ai/ACTIVE_ASSUMPTIONS.md` — The human-approved logic gate from Phase 1.5. **If `assumptions_state` is `skipped` in the ledger, this file does not exist — skip the Assumption Check (Step 1 below) and validate SQL directly against requirements and schema.yml.**
 4. `CLAUDE.md` — Global project standards.
 
 ## 🔍 Validation Steps

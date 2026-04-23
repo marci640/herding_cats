@@ -58,10 +58,8 @@ Run this mode when the Lead Agent needs to publish content to Confluence.
 - **content:** Markdown content to publish, OR path to a local file
 
 ### Core Rules
-- Read `ACTIVE_JIRA_ID` and `CONFLUENCE_SPACE` from `.env`. If either is missing, halt.
-- Confirm one sprint container whose title contains `ACTIVE_JIRA_ID`. Prefer a real folder over a same-titled stub page. If the container is unclear, empty, or stray, halt. Never write outside the confirmed sprint container.
+Follow the Confluence Collaboration Protocol in `/.ai/LEAD_PROMPT.md` for all discovery, container, and content ownership rules. Additional Mode 3 specifics:
 - Locate the child page with flexible matching: ignore any optional `🤖` prefix and match both `<page_type>` and `ACTIVE_JIRA_ID` in the title.
-- Preserve `TEAM INPUT` exactly. Replace only `AI OUTPUT`.
 - Missing page policy:
   - `requirements` → halt; the human creates it first
   - `assumptions` → create it as a live doc under the confirmed sprint container
