@@ -39,7 +39,7 @@ No git commit or push is allowed unless the TPM explicitly signals the checkpoin
 
 Allowed checkpoints after explicit TPM approval:
 1. **Requirements approved:** Locked `SPRINT_REQUIREMENTS.md` + ledger update.
-2. **Assumptions approved:** Approved Phase 1 artifacts (`schema.yml`, `ACTIVE_ASSUMPTIONS.md`, ledger state).
+2. **Assumptions approved:** Approved Phase 1 artifacts (`schema.yml`, `ACTIVE_ASSUMPTIONS.md`, ledger state). If assumptions were skipped (fast-path), commit `schema.yml` and ledger update at the Phase 1 checkpoint instead.
 3. **Post-wrap-up:** Ledger → `history`, archive outputs, workspace reset.
 
 Pattern: `git add -A && git commit -m "message" && git push`
@@ -47,93 +47,65 @@ Pattern: `git add -A && git commit -m "message" && git push`
 **Hard gate:** Before PR actions or phase transitions, run `git status -sb`. If branch is `ahead`, push first.
 
 ## 🔄 Sprint Synchronization (Sprint Start)
-1. **Derive `sprint_id`:** Read `ACTIVE_JIRA_ID` from `.env`. This is the sprint ID, branch name, and Confluence lookup key. If missing, halt and ask TPM.
-2. Update ledger: move `active_sprint` to `history`, initialize new sprint data:
-   ```json
-   "active_sprint": {
-     "sprint_id": "JIRA-1",
-     "started": "YYYY-MM-DD",
-     "requirements_state": null,
-     "assumptions_state": null,
-     "artifacts": [],
-     "phase_log": []
-   }
-   ```
-   `sprint_id` is always `ACTIVE_JIRA_ID` from `.env` — this is also the branch name.
-3. Trigger Phase 0 environment verification only. Do **not** fetch Confluence requirements, draft `SPRINT_REQUIREMENTS.md`, publish `AI OUTPUT`, or commit requirement content during init.
-4. Halt and wait for the explicit TPM command `requirements ready` before running the Requirements Workflow.
+1. **Derive `sprint_id`:** Read `ACTIVE_JIRA_ID` from `.env`. This is the sprint ID, branch name, and Confluence lookup key. If missing, halt.
+2. Update ledger: move `active_sprint` to `history`, initialize new sprint with fields: `sprint_id`, `started`, `requirements_state: null`, `assumptions_state: null`, `artifacts: []`, `phase_log: []`.
+3. Run Phase 0 only. Do **not** fetch Confluence, draft requirements, publish, or commit during init.
+4. Halt and wait for `requirements ready`.
 
 ## ⛓️ Execution Sequencing & Gates
 
 1. **Phase 0 (Init):** Execute Mode 1 of `04_devops.md` → set `env_verified: true` and initialize the sprint safely. Halt after verification and wait for the explicit TPM signal `requirements ready`.
-2. **Phase 1 (Architect):** Archie reads approved `SPRINT_REQUIREMENTS.md` → generates `schema.yml`. MUST generate `ACTIVE_ASSUMPTIONS.md` if logic is ambiguous.
-3. **Phase 1.5 (Assumptions Workflow):** See [Assumptions Workflow](#-assumptions-workflow-ai-led) below. Only proceed to Phase 2 when TPM says `assumptions approved`.
+2. **Phase 1 (Architect):** Archie reads approved `SPRINT_REQUIREMENTS.md` → generates `schema.yml`. MUST generate `ACTIVE_ASSUMPTIONS.md` if logic is ambiguous. If requirements are fully unambiguous, Archie reports `NO_ASSUMPTIONS` and does not create `ACTIVE_ASSUMPTIONS.md`.
+3. **Phase 1.5 (Assumptions Workflow):** See [Assumptions Workflow](#-assumptions-workflow-ai-led) below. **Fast-path:** If Archie reports `NO_ASSUMPTIONS`, skip Phase 1.5 entirely — set `assumptions_state` → `skipped`, log the skip in `phase_log`, and proceed directly to Phase 2.
 4. **Phase 2 (Transformer):** Bea writes SQL from `schema.yml` only (FORBIDDEN from reading requirements).
 5. **Phase 3 (Auditor):** Audrey cross-references Requirements vs. Assumptions vs. SQL.
 6. **Phase 4 (DevOps):** Execute Mode 2 of `04_devops.md` — validate Airflow DAG.
 
 **Exit criteria per phase:**
-- Phase 0: `env_verified: true` and sprint initialized safely; requirements drafting begins only after explicit `requirements ready`, and Phase 1 still requires `requirements approved`
-- Phase 1: `schema.yml` with columns, types, tests, descriptions
-- Phase 1.5: Assumptions approved on Confluence, `approved-by-tpm` label on PR
-- Phase 2: SQL files with column names matching `schema.yml` exactly
-- Phase 3: `dbt test` passes with 0 failures
-- Phase 4: DAG syntax valid, task chain correct
+- Phase 0: `env_verified: true`; halt until `requirements ready`, then `requirements approved` before Phase 1.
+- Phase 1: `schema.yml` produced; Archie reports `NO_ASSUMPTIONS` or produces `ACTIVE_ASSUMPTIONS.md`.
+- Phase 1.5: `assumptions_state` is `approved` (with PR label) or `skipped` (fast-path).
+- Phase 2: SQL column names match `schema.yml` exactly.
+- Phase 3: `dbt test` passes with 0 failures.
+- Phase 4: DAG syntax valid, task chain correct.
 
-*Retry: max 3 attempts per phase before alerting TPM.*
+*Max 3 retries per phase before alerting TPM.*
 
 ### 🔄 Requirements Workflow (Human-Led)
 Flow: `ready` → `generated` → *(loop)* → `approved`
 
-This workflow runs **only** on an explicit `requirements ready` signal (including the first pass and any mid-sprint revisions).
-
-**On `requirements ready`:**
-1. Fetch the `requirements` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
-2. Read `TEAM INPUT` as the authoritative business intent.
-3. Generate/update `SPRINT_REQUIREMENTS.md` from the Confluence content, mapping `TEAM INPUT` into the structured template sections (`Business Rules`, `Transformation Logic`, `New Models / Sources`, `Execution Prerequisites`, `Acceptance Criteria`).
-4. Preserve AI-generated clarifications or structure that do **not** conflict with the Confluence content. If Confluence includes keyword anchors in `TEAM INPUT`, carry anchored text verbatim.
-5. Update the `Confluence Source:` header with the version link.
-6. Publish the structured draft back to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `requirements`). Mode 3 appends a `` `generated {timestamp}` `` entry to the page's Changelog.
-7. Set `active_sprint.requirements_state` → `generated`. Notify TPM.
-8. Leave the draft uncommitted until the TPM explicitly says `requirements approved` or directly asks for a git checkpoint.
-
-**On subsequent `requirements ready`:** Repeat steps 1–7 (same command handles both first pass and revisions).
+**On `requirements ready`** (first pass or revision):
+1. Fetch `requirements` child page from Confluence folder titled `ACTIVE_JIRA_ID`. Read `TEAM INPUT` as authoritative intent.
+2. Generate/update `SPRINT_REQUIREMENTS.md` from Confluence content, mapping into template sections. Preserve non-conflicting AI structure and anchored text verbatim. Update `Confluence Source:` header.
+3. Publish draft to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `requirements`).
+4. Set `requirements_state` → `generated`. Notify TPM. Leave uncommitted.
 
 **On `requirements approved`:**
-1. Treat current `SPRINT_REQUIREMENTS.md` as locked.
-2. Set `active_sprint.requirements_state` → `approved`.
-3. Commit and push the locked `SPRINT_REQUIREMENTS.md` and ledger update because this is the explicit TPM approval checkpoint.
-4. Proceed to Phase 1 (Architect).
+1. Lock `SPRINT_REQUIREMENTS.md`. Set `requirements_state` → `approved`.
+2. Commit and push (explicit TPM approval checkpoint).
+3. Proceed to Phase 1.
 
 ### 🔄 Assumptions Workflow (AI-Led)
 Flow: `generated` → `ready` → *(loop)* → `approved`
 
-This workflow runs at Phase 1.5, triggered automatically after the Architect produces assumptions.
+**Fast-path:** If Archie reports `NO_ASSUMPTIONS`, skip this workflow entirely. Set `assumptions_state` → `skipped`, log `{"phase": "assumptions-skipped", ...}` in `phase_log`, proceed to Phase 2.
 
 **On Phase 1 completion (auto-trigger):**
-1. **Format check:** Every assumption needs `Ambiguity/Gap`, `Decision`, `Rationale`, `Implementation Impact`, `TPM Action`.
-2. Publish `ACTIVE_ASSUMPTIONS.md` to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `assumptions`).
-3. **PR:** Check `gh pr view --json url`. If missing, create with `gh pr create --fill --assignee "@me" --reviewer "marci640"`. PR body links to the Confluence assumptions page.
-4. Treat Confluence plus the linked PR as the review source of truth while assumptions are still in `generated` or `ready` state.
-5. Set `active_sprint.assumptions_state` → `generated`. Halt and notify TPM without committing the draft assumptions.
+1. Format-check assumptions (require 5-item format). Publish `ACTIVE_ASSUMPTIONS.md` to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `assumptions`).
+2. Ensure a PR exists (`gh pr create --fill --assignee "@me" --reviewer "marci640"` if missing). PR body links to Confluence assumptions page.
+3. Set `assumptions_state` → `generated`. Halt and notify TPM. Do not commit.
 
 **On `assumptions ready`:**
-1. Fetch the `assumptions` child page from the Confluence folder titled `ACTIVE_JIRA_ID`.
-2. Read team answers/edits from `TEAM INPUT` and any direct edits to `AI OUTPUT`.
-3. Regenerate `ACTIVE_ASSUMPTIONS.md`, incorporating answers and resolving questions. Carry forward previously resolved assumptions.
-4. Route changes back to Archie for `schema.yml` patch if assumption values changed.
-5. Republish to Confluence `AI OUTPUT` via Devin (Mode 3, page type: `assumptions`).
-6. Update PR: `gh pr comment <N> --body "Assumptions regenerated. Review at [Confluence link]."` and `gh pr edit <N> --add-reviewer "marci640"`.
-7. Keep the updated assumptions uncommitted while review is in progress.
-8. Set `active_sprint.assumptions_state` → `generated`. Notify TPM.
+1. Fetch `assumptions` page from Confluence. Read `TEAM INPUT` edits and any `AI OUTPUT` changes.
+2. Regenerate `ACTIVE_ASSUMPTIONS.md`, incorporating answers. Route changes to Archie for `schema.yml` patch if values changed.
+3. Republish to Confluence. Update PR with comment and re-request review.
+4. Set `assumptions_state` → `generated`. Notify TPM. Do not commit.
 
 **On `assumptions approved`:**
 1. Verify `approved-by-tpm` label on PR. If missing, halt.
-2. Fetch final state from Confluence. Sync local `ACTIVE_ASSUMPTIONS.md`.
-3. Remove transient `HUMAN:` pointers while preserving anchored text.
-4. Set `active_sprint.assumptions_state` → `approved`.
-5. Commit and push the approved assumptions artifacts and ledger update because this is the explicit TPM approval checkpoint.
-6. Proceed to Phase 2 (Transformer).
+2. Fetch final state from Confluence. Sync local file. Remove transient `HUMAN:` pointers.
+3. Set `assumptions_state` → `approved`. Commit and push (explicit TPM approval checkpoint).
+4. Proceed to Phase 2.
 
 # DEFINITION OF DONE
 - [ ] dbt models include `processed_at` timestamp.
@@ -154,69 +126,12 @@ When the User requests a reset (NOT a wrap-up):
 Execute when Phase 4 is complete and TPM requests wrap-up:
 
 **Hard preconditions:**
-- Wrap-up is forbidden if requirements or assumptions state is not `approved`.
-- If the current sprint entered Phase 1.5, verify the PR has the `approved-by-tpm` label before wrap-up or merge.
+- Wrap-up is forbidden if requirements state is not `approved`.
+- Wrap-up is forbidden if assumptions state is not `approved` or `skipped`.
+- If the current sprint entered Phase 1.5 (assumptions were NOT skipped), verify the PR has the `approved-by-tpm` label before wrap-up or merge.
 
-1. **Archive:** Create `docs/archive/{sprint_id_lowercase}/` (e.g. `docs/archive/scrum-3/`).
-2. **Copy requirements** to archive: `docs/archive/{sprint_id_lowercase}/requirements.md`.
-3. **Consolidate assumptions:** Write approved assumptions into archived `requirements.md`.
-4. **Generate summary**: `docs/archive/{sprint_id_lowercase}/summary.md` (see Archive Template below).
-5. **Rule promotion:** Scan for "Global" rules → append to `CLAUDE.md`.
-6. **Update ledger:** Move `active_sprint` to `history`, increment version, set `active_sprint: null`.
-7. **Workspace reset:** Replace `SPRINT_REQUIREMENTS.md` with blank template. Delete temp files (`debug.log`, `FIX_LOG.md`, `ACTIVE_ASSUMPTIONS.md`).
-
-```markdown
-## Sprint Requirements
-<!-- Sprint ID: [JIRA-1] | Started: [DATE] -->
-<!-- Confluence Source: [page_title] v[N] — [versioned URL] -->
-**Sprint ID:** [JIRA-1]
-
-### Business Rules
-[Define the business logic and constraints for this sprint]
-
-### Transformation Logic
-[Specify the data transformation requirements]
-
-### New Models / Sources
-[List new models, sources, or changes to existing models]
-
-### Execution Prerequisites
-[List sprint-specific upstream inputs and preflight checks not already covered by permanent project standards in CLAUDE.md.]
-
-### Technical Dependencies
-[List any technical requirements, packages, or infrastructure needed]
-
-### Approved Assumptions
-[None, or list only assumptions that were explicitly approved through HITL; this section is the replayable record archived with the sprint requirements]
-
-### Acceptance Criteria
-[List concrete success criteria, including required model builds, test expectations, and any upstream readiness conditions that must be satisfied before the sprint can be considered complete.]
-
-### Permanent Rules (will be promoted to CLAUDE.md on sprint close)
-[List any rules that should become global project standards]
-```
-
-### Archive Template
-Write `docs/archive/{sprint_id_lowercase}/summary.md`:
-
-```markdown
-# Sprint [N] Archive — [Sprint Name]
-**Closed:** [date]
-**Version:** [semver]
-**Branch:** `[sprint_id]`
-
-## Business Rules Applied
-[list each constraint and transformation rule]
-
-## Permanent Rules Promoted to CLAUDE.md
-[list any rules that were marked Global/Permanent, or "none"]
-
-## Artifacts Produced
-[table of files created, modified, or deleted]
-
-## Test Results
-[dbt test pass/fail counts, total tests]
-
-## Auditor Findings
-[list any findings detected and fixed during audit, or "No findings"]
-```
+1. **Archive:** Create `docs/archive/{sprint_id_lowercase}/`. Copy requirements and consolidate approved assumptions into archived `requirements.md`.
+2. **Generate summary** from template at `/.ai/templates/archive_summary.md`.
+3. **Rule promotion:** Scan for "Global" rules → append to `CLAUDE.md`.
+4. **Update ledger:** Move `active_sprint` to `history`, increment version, set `active_sprint: null`.
+5. **Workspace reset:** Replace `SPRINT_REQUIREMENTS.md` with template at `/.ai/templates/sprint_requirements.md`. Delete temp files (`debug.log`, `FIX_LOG.md`, `ACTIVE_ASSUMPTIONS.md`).

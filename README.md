@@ -27,6 +27,8 @@ A **Technical PM** orchestrates a data engineering lifecycle using **GitHub Copi
 
 **Phase 1 (Architect)** → `schema.yml` + assumptions → **Phase 1.5 (Assumptions gate)** → halts for `assumptions approved` → **Phase 2 (Transformer)** → SQL from contract → **Phase 3 (Auditor)** → `dbt test` → **Phase 4 (DevOps)** → DAG validation.
 
+> **Fast-path:** If requirements are fully unambiguous, the Architect reports `NO_ASSUMPTIONS` and Phase 1.5 is skipped entirely.
+
 ### Two Confluence Workflows
 
 Both use pages split into `TEAM INPUT` (human-owned) and `AI OUTPUT` (agent-managed, fully replaced on each pass). Each sprint uses a Confluence parent page named by `ACTIVE_JIRA_ID`, with `requirements` and `assumptions` under it. Every publish appends a `## Changelog` entry.
@@ -84,4 +86,16 @@ Archives sprint artifacts to `docs/archive/`, promotes permanent rules to `CLAUD
 | Project standards | `CLAUDE.md` |
 | Orchestration rules | `.ai/LEAD_PROMPT.md` |
 | Agent behavior | `agents/` |
-| Session handoff | `.ai/HANDOFF_CONTEXT.md` |
+| Templates | `.ai/templates/` |
+
+## Bootstrap Prompt
+
+To cold-start a new session, paste this into Copilot Chat:
+
+```
+Read CLAUDE.md, .ai/LEAD_PROMPT.md, .ai/sprint_ledger.json, .ai/SPRINT_REQUIREMENTS.md, and all files in agents/. Then:
+1. Summarize the current project state.
+2. Identify whether a sprint is active.
+3. List any blockers or missing inputs.
+4. Recommend the next action.
+```

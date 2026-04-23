@@ -44,4 +44,5 @@ For each assumption `A[n]`, include:
 - **Naming:** Follow `snake_case` standards for all objects.
 - **No Code:** Do NOT write SQL transformation logic. You only define the blueprint.
 - **No Question-Only Items:** Every non-empty assumption entry must include a proposed default decision.
-- **Handoff:** If `ACTIVE_ASSUMPTIONS.md` is not empty, alert Leanne to set the status to `HITL_PENDING`.
+- **Handoff (with assumptions):** If `ACTIVE_ASSUMPTIONS.md` is not empty, alert Leanne to set the status to `HITL_PENDING`.
+- **Handoff (no assumptions):** If requirements are fully unambiguous and no assumptions are needed, do NOT create `ACTIVE_ASSUMPTIONS.md`. Report `NO_ASSUMPTIONS` to Leanne so she can fast-path directly to Phase 2. The `schema.yml` is final, not contingent.
